@@ -1,13 +1,14 @@
 <div class="d-flex align-items-center justify-content-center bg-light" style="min-height: 100vh;">
   <div class="card shadow-sm" style="width: 400px; max-width: 90%;">
     <div class="card-body p-4">
-      <h3 class="text-center mb-4">Login</h3>
+      <h3 class="text-center mb-4">{{ isRegister ? 'Register' : 'Login' }}</h3>
 
-      <div *ngIf="error" class="alert alert-danger p-2 small text-center mb-3">
+      <div *ngIf="error" [class]="error.includes('successful') ? 'alert alert-success' : 'alert alert-danger'"
+        class="p-2 small text-center mb-3">
         {{ error }}
       </div>
 
-      <form [formGroup]="form" (ngSubmit)="login()">
+      <form [formGroup]="form" (ngSubmit)="submit()">
         <div class="mb-3">
           <label class="form-label">Email</label>
           <input type="email" class="form-control" formControlName="email" placeholder="admin@example.com"
@@ -21,9 +22,15 @@
         </div>
 
         <button type="submit" class="btn btn-primary w-100" [disabled]="form.invalid">
-          Sign In
+          {{ isRegister ? 'Create Account' : 'Sign In' }}
         </button>
       </form>
+
+      <div class="text-center mt-3">
+        <a href="javascript:void(0)" (click)="toggleMode()" class="text-decoration-none small">
+          {{ isRegister ? 'Already have an account? Login' : 'Need an account? Register' }}
+        </a>
+      </div>
 
       <div class="text-center mt-3 text-muted small">
         <p class="mb-0">Demo Account:</p>

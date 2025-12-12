@@ -10,6 +10,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
+  isRegister = false;
   error = '';
 
   private fb = inject(FormBuilder);
@@ -21,16 +22,32 @@ export class LoginComponent {
     password: ['', Validators.required],
   });
 
-  login() {
+  submit() {
     if (this.form.invalid) return;
 
-    this.auth.login(
-      this.form.value.email!,
-      this.form.value.password!
-    ).subscribe({
-      next: () => this.router.navigateByUrl('/dashboard'),
-      error: () => (this.error = 'Invalid login'),
-    });
+    const { email, password } = this.form.value;
+
+    if (this.isRegister) {
+      this.auth.register(email!, password!).subscribe({
+        next: () => {
+          this.isRegister = false;
+          this.error = 'Registration successful! Please login.';
+          this.form.reset();
+        },
+        error: (err) => (this.error = err.error?.message || 'Registration failed'),
+      });
+    } else {
+      this.auth.login(email!, password!).subscribe({
+        next: () => this.router.navigateByUrl('/dashboard'),
+        error: () => (this.error = 'Invalid credentials'),
+      });
+    }
+  }
+
+  toggleMode() {
+    this.isRegister = !this.isRegister;
+    this.error = '';
+    this.form.reset();
   }
 
   logout() {

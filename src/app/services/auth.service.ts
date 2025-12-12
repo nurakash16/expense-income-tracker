@@ -7,7 +7,14 @@ import { environment } from '../../environments/environment';
 export class AuthService {
   isLoggedIn = signal<boolean>(!!localStorage.getItem('token'));
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
+
+  register(email: string, password: string) {
+    return this.http.post(`${environment.apiUrl}/auth/register`, {
+      email,
+      password,
+    });
+  }
 
   login(email: string, password: string) {
     return this.http
