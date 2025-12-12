@@ -12,13 +12,20 @@ This guide walks you through deploying your full-stack Angular + Node.js applica
     - Click **"Create new project"**.
 
 2.  **Get Connection Details**:
-    - Once the project is created, go to **Settings (cog icon)** -> **Database**.
-    - Scroll down to the **Connection parameters** section.
+    - There are two ways to find this:
+        - **Option A (Easy)**: On the main Project Dashboard, look for a **"Connect"** button near the top right. Click it, select **"Node.js"**, and it will show you the connection string. You can extract the Host, User, and Databasename from there.
+        - **Option B (Settings)**: 
+            1. Click the **"Settings"** (Cog icon) at the bottom of the left sidebar.
+            2. Click **"Database"** in the "Configuration" or "Project Settings" menu.
+            3. Look for the **"Connection parameters"** section.
+            4. **Note:** You might need to uncheck "Use connection pooling" to see port 5432, or use the Transaction Pooler (port 6543) if recommended.
+            
     - Note down these values:
-        - **Host**
-        - **Database Name** (Default is usually `postgres`. Using this is simplest).
+        - **Host** (e.g., `db.xyz.supabase.co`)
+        - **Database Name** (Default is usually `postgres`).
         - **User** (Default is `postgres`).
         - **Port** (Default is `5432` or `6543`).
+        - **Password** (The password you created in step 1. You cannot view this again, so you must have saved it).
 
 ## Part 2: Vercel Deployment
 
