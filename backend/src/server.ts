@@ -9,7 +9,7 @@ import app from './app';
 const frontendPath = path.join(__dirname, '../../dist/income-expense-tracker/browser');
 app.use(express.static(frontendPath));
 
-app.get('*', (req, res) => {
+app.get(/(.*)/, (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 

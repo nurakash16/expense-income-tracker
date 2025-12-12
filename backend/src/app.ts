@@ -29,4 +29,13 @@ app.get('/api/analytics/heatmap', authMiddleware as any, getHeatmap);
 app.get('/api/analytics/waterfall', authMiddleware as any, getWaterfall);
 app.get('/api/analytics/rollups', authMiddleware as any, getRollups);
 
+// Global Error Handler
+app.use((err: any, req: any, res: any, next: any) => {
+    console.error('Global API Error:', err);
+    res.status(500).json({
+        message: err.message || 'Internal Server Error',
+        details: process.env.NODE_ENV === 'development' ? err : undefined
+    });
+});
+
 export default app;
