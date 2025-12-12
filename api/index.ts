@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import app from '../backend/src/app';
 import { connectDB } from '../backend/src/config/db';
 

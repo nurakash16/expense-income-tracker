@@ -18,7 +18,7 @@ export const AppDataSource = new DataSource({
     synchronize: true,
     logging: false,
     entities: [User, Category, Transaction, WeeklyRollup],
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    ssl: (process.env.NODE_ENV === 'production' || process.env.DB_HOST?.includes('supabase')) ? { rejectUnauthorized: false } : false,
 });
 
 export const connectDB = async () => {
