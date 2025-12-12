@@ -6,12 +6,14 @@ import { connectDB } from '../backend/src/config/db';
 export default async function handler(req: any, res: any) {
     try {
         await connectDB();
+        app(req, res);
     } catch (e: any) {
-        console.error('DB connection failed', e);
+        console.error('SERVER ERROR:', e);
         return res.status(500).json({
-            error: 'Database connection failed',
-            details: e.message
+            error: 'CRITICAL SERVER ERROR',
+            message: e.message,
+            stack: e.stack,
+            details: JSON.stringify(e)
         });
     }
-    app(req, res);
 }
