@@ -23,8 +23,10 @@ export const AppDataSource = new DataSource({
 
 export const connectDB = async () => {
     try {
-        await AppDataSource.initialize();
-        console.log('✅ PostgreSQL connected');
+        if (!AppDataSource.isInitialized) {
+            await AppDataSource.initialize();
+            console.log('✅ PostgreSQL connected');
+        }
     } catch (err) {
         console.error('❌ PostgreSQL connection error', err);
         throw err;
