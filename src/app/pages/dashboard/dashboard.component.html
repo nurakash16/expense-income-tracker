@@ -1,0 +1,340 @@
+<div class="mb-5 d-flex align-items-end justify-content-between">
+  <div>
+    <h2 class="fw-bold mb-1 text-dark">Dashboard</h2>
+    <div class="text-muted">Welcome back, here's what's happening with your finances today.</div>
+  </div>
+  <button class="btn btn-primary" routerLink="/transactions">
+    <span>+ New Transaction</span>
+  </button>
+  </div>
+
+<!-- Stats + KPI Cards -->
+<div class="row g-4 mb-5">
+  <div class="col-md-4">
+    <div class="card h-100 border-0 shadow-sm overflow-hidden text-white bg-gradient-success">
+      <div class="card-body position-relative">
+        <div class="position-absolute top-0 end-0 p-3 opacity-25">
+          <svg style="width:64px;height:64px" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.15-1.46-3.27-3.4h1.96c.1 1.05 1.18 1.91 2.53 1.91 1.29 0 2.13-.81 2.13-1.66 0-1.94-4.52-1.99-4.52-4.43 0-1.39 1.17-2.37 2.47-2.65V6h2.67v1.93c1.38.35 2.58 1.49 2.63 3.09h-1.98c-.1-1.07-1.02-1.68-1.96-1.68-1.22 0-2.06.86-2.06 1.76 0 1.96 4.5 1.99 4.5 4.43 0 1.39-1.23 2.61-2.93 2.96z" />
+          </svg>
+        </div>
+        <div class="mb-1 text-white-50 fw-semibold text-uppercase" style="font-size: 0.8rem; letter-spacing: 0.05em;">
+          Total Income</div>
+        <div class="display-5 fw-bold mb-2">{{ totalIncome() | currency:'BDT':'symbol-narrow':'1.0-0' }}</div>
+        <div class="d-flex align-items-center gap-1 text-white-50 font-sm">
+          <span class="bg-white bg-opacity-25 rounded px-1 text-white">
+            {{ momIncome() | number:'1.0-0' }}%
+          </span>
+          <span>vs last month</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card h-100 border-0 shadow-sm overflow-hidden text-white"
+      style="background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%);">
+      <div class="card-body position-relative">
+        <div class="position-absolute top-0 end-0 p-3 opacity-25">
+          <svg style="width:64px;height:64px" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13H5v-2h14v2z" />
+          </svg>
+        </div>
+        <div class="mb-1 text-white-50 fw-semibold text-uppercase" style="font-size: 0.8rem; letter-spacing: 0.05em;">
+          Total Expense</div>
+        <div class="display-5 fw-bold mb-2">{{ totalExpense() | currency:'BDT':'symbol-narrow':'1.0-0' }}</div>
+        <div class="d-flex align-items-center gap-1 text-white-50 font-sm">
+          <span class="bg-white bg-opacity-25 rounded px-1 text-white">
+            {{ momExpense() | number:'1.0-0' }}%
+          </span>
+          <span>vs last month</span>
+        </div>
+        <div class="d-flex align-items-center gap-1 text-white-50 font-sm">
+          <span>Budget: {{ budgetTarget() | currency:'BDT':'symbol-narrow':'1.0-0' }}</span>
+          <span class="ms-auto">{{ (totalExpense()/budgetTarget()*100) | number:'1.0-0' }}%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card h-100 border-0 shadow-sm overflow-hidden bg-white text-dark">
+      <div class="card-body position-relative">
+        <div class="mb-1 text-muted fw-semibold text-uppercase" style="font-size: 0.8rem; letter-spacing: 0.05em;">
+          Current Balance</div>
+        <div class="display-5 fw-bold mb-2 text-primary-custom">{{ balance() | currency:'BDT':'symbol-narrow':'1.0-0' }}</div>
+        <div class="progress" style="height: 6px;">
+          <div class="progress-bar bg-primary" role="progressbar" [style.width.%]="balanceHealth().percent"></div>
+        </div>
+        <div class="mt-2 text-muted small">{{ balanceHealth().label }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-kpi-cards [params]="{start: startMonth() || undefined, end: endMonth() || undefined, type: filterType() !== 'all' ? filterType() : undefined, categoryId: filterCategoryId() || undefined, paymentMethod: filterPayment() || undefined}"></app-kpi-cards>
+
+<!-- Additional KPI row -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Savings Rate</div>
+        <div class="d-flex align-items-center gap-2">
+          <div class="display-6 fw-bold">{{ (savingsRate()*100) | number:'1.0-0' }}%</div>
+          <span class="badge bg-light text-muted">Target 20%</span>
+        </div>
+        <div echarts [options]="sparkNetOption()" [autoResize]="true" style="height:60px;width:100%;"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Burn Rate (per day)</div>
+        <div class="display-6 fw-bold text-danger">{{ burnRate() | currency:'BDT':'symbol':'1.0-0' }}</div>
+        <div class="text-muted small">Current month average spend</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+          <div class="text-muted small">Avg Transaction</div>
+          <div class="display-6 fw-bold">{{ avgTicket() | currency:'BDT':'symbol-narrow':'1.0-0' }}</div>
+        <div class="text-muted small">Across all transactions</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Budget vs Spend</div>
+        <div echarts [options]="budgetBarOption()" [autoResize]="true" style="height:60px;width:100%;"></div>
+        <div class="d-flex justify-content-between text-muted small">
+          <span>Target $2,500</span>
+          <span>Spent {{ totalExpense() | currency:'BDT':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <!-- Filters -->
+  <div class="col-12 mb-2">
+    <div class="d-flex flex-wrap gap-2 align-items-end">
+      <div>
+        <label class="form-label small text-muted">Type</label>
+        <select class="form-select form-select-sm" [ngModel]="filterType()" (ngModelChange)="onFilterTypeChange($event)">
+          <option value="all">All</option>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+      </div>
+      <div class="d-flex flex-column">
+        <label class="form-label small text-muted">Month Range</label>
+        <div class="input-group input-group-sm" style="min-width: 280px;">
+          <input class="form-control" type="month" [ngModel]="startMonth()" (ngModelChange)="onStartMonthChange($event)" />
+          <span class="input-group-text">–</span>
+          <input class="form-control" type="month" [ngModel]="endMonth()" (ngModelChange)="onEndMonthChange($event)" />
+        </div>
+      </div>
+      <div>
+        <label class="form-label small text-muted">Category</label>
+        <select class="form-select form-select-sm" [ngModel]="filterCategoryId()" (ngModelChange)="filterCategoryId.set($event)">
+          <option value="">All</option>
+          <option *ngFor="let c of categoryChoices()" [value]="c.id">{{ c.name }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label small text-muted">Payment</label>
+        <select class="form-select form-select-sm" [ngModel]="filterPayment()" (ngModelChange)="filterPayment.set($event)">
+          <option value="">All</option>
+          <option value="cash">Cash</option>
+          <option value="card">Card</option>
+          <option value="bank">Bank Transfer</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label small text-muted">Budget (BDT)</label>
+        <div class="input-group input-group-sm" style="width:160px;">
+          <span class="input-group-text">৳</span>
+          <input class="form-control" type="number" min="0" [ngModel]="budgetTarget()" (ngModelChange)="updateBudgetTarget($event)" />
+        </div>
+      </div>
+      <button class="btn btn-sm btn-primary" (click)="reloadStats()">Apply</button>
+    </div>
+  </div>
+  <!-- Trend Chart -->
+  <div class="col-lg-8">
+    <div class="card chart-card h-100 shadow-sm border-0">
+      <div class="card-header bg-white border-0 py-3">
+        <h5 class="mb-0 fw-bold">Financial Trend</h5>
+      </div>
+      <div class="card-body">
+        <div echarts [options]="trendOption()" [autoResize]="true" [initOpts]="{renderer: 'canvas', useDirtyRect: true}"
+          (chartInit)="onChartInit($event)"
+          class="w-100" style="height: 350px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Categories Chart -->
+  <div class="col-lg-4">
+    <div class="card chart-card h-100 shadow-sm border-0">
+      <div class="card-header bg-white border-0 py-3">
+        <h5 class="mb-0 fw-bold">Expense Breakdown</h5>
+      </div>
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <div echarts [options]="pieOption()" [autoResize]="true" [initOpts]="{renderer: 'canvas'}" (chartInit)="onChartInit($event)" class="w-100"
+          style="height: 350px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Analytics panels -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-8">
+    <div class="card chart-card h-100 shadow-sm border-0">
+      <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold">Expense Heatmap</h5>
+        <div class="d-flex align-items-center gap-2">
+          <label class="small text-muted">Year</label>
+          <input type="number" class="form-control form-control-sm" style="width:100px" [ngModel]="heatmapYear()" (ngModelChange)="onHeatmapYearChange($event)">
+        </div>
+      </div>
+      <div class="card-body">
+        <div echarts [options]="heatmapOption()" [autoResize]="true" class="w-100" style="height: 300px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card chart-card h-100 shadow-sm border-0">
+      <div class="card-header bg-white border-0 py-3">
+        <h5 class="mb-0 fw-bold">MoM Waterfall</h5>
+      </div>
+      <div class="card-body">
+        <div echarts [options]="waterfallOption()" [autoResize]="true" class="w-100" style="height: 300px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Top categories + Savings gauge + Weekly trend -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="card chart-card h-100 shadow-sm border-0">
+      <div class="card-header bg-white border-0 py-3">
+        <h5 class="mb-0 fw-bold">Top Categories</h5>
+      </div>
+      <div class="card-body">
+        <div echarts [options]="topCatsOption()" [autoResize]="true" class="w-100" style="height: 300px;"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3">
+    <div class="card chart-card h-100 shadow-sm border-0">
+      <div class="card-header bg-white border-0 py-3">
+        <h5 class="mb-0 fw-bold">Savings Rate</h5>
+      </div>
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <div echarts [options]="savingsGaugeOption()" [autoResize]="true" class="w-100" style="height: 260px;"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-header bg-white border-0 py-3">
+        <h5 class="mb-0 fw-bold">Weekly Trend</h5>
+      </div>
+      <div class="card-body">
+        <div echarts [options]="weeklyTrendOption()" [autoResize]="true" class="w-100" style="height: 260px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Transaction Insights -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Top Income</div>
+        <div class="fw-bold" *ngIf="topIncomeTx(); else noIncome">
+          {{ topIncomeTx()?.amount | currency:'BDT':'symbol-narrow':'1.0-0' }} · {{ categoryName(topIncomeTx()?.categoryId || '') }}
+        </div>
+        <ng-template #noIncome><span class="text-muted small">No income yet</span></ng-template>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Top Expense</div>
+        <div class="fw-bold" *ngIf="topExpenseTx(); else noExpense">
+          {{ topExpenseTx()?.amount | currency:'BDT':'symbol-narrow':'1.0-0' }} · {{ categoryName(topExpenseTx()?.categoryId || '') }}
+        </div>
+        <ng-template #noExpense><span class="text-muted small">No expense yet</span></ng-template>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Transactions</div>
+        <div class="display-6 fw-bold">{{ transactionCount() }}</div>
+        <div class="text-muted small">Loaded in this view</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="row">
+  <div class="col-12">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white border-0 py-3 d-flex align-items-center justify-content-between">
+        <h5 class="mb-0 fw-bold">Recent Transactions</h5>
+        <a routerLink="/transactions" class="text-decoration-none small fw-bold text-primary">View All &rarr;</a>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="bg-light">
+              <tr>
+                <th class="border-0 ps-4">Type</th>
+                <th class="border-0">Category</th>
+                <th class="border-0">Date</th>
+                <th class="border-0 text-end pe-4">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of recent()">
+                <td class="ps-4">
+                  <span class="badge rounded-pill" [class.bg-success-subtle]="t.type==='income'"
+                    [class.text-success]="t.type==='income'" [class.bg-danger-subtle]="t.type==='expense'"
+                    [class.text-danger]="t.type==='expense'">
+                    {{ t.type | titlecase }}
+                  </span>
+                </td>
+                <td class="fw-semibold">{{ categoryName(t.categoryId) }}</td>
+                <td class="text-muted">{{ t.date | date:'mediumDate' }}</td>
+                <td class="text-end pe-4 fw-bold" [class.text-success]="t.type==='income'"
+                  [class.text-danger]="t.type==='expense'">
+                  {{ t.type === 'income' ? '+' : '-' }}{{ t.amount | currency }}
+                </td>
+              </tr>
+              <tr *ngIf="recent().length === 0">
+                <td colspan="4" class="text-center py-4 text-muted">No recent transactions found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

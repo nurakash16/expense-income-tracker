@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=secure_password
+      - DB_NAME=income_tracker
+      - JWT_SECRET=change_this_secret_in_prod
+    depends_on:
+      - postgres
+    restart: always
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secure_password
+      - POSTGRES_DB=income_tracker
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: always
+
+volumes:
+  postgres_data:

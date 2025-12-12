@@ -1,0 +1,35 @@
+<div class="d-flex align-items-center justify-content-center bg-light" style="min-height: 100vh;">
+  <div class="card shadow-sm" style="width: 400px; max-width: 90%;">
+    <div class="card-body p-4">
+      <h3 class="text-center mb-4">Login</h3>
+
+      <div *ngIf="error" class="alert alert-danger p-2 small text-center mb-3">
+        {{ error }}
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="login()">
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" formControlName="email" placeholder="admin@example.com"
+            [class.is-invalid]="form.get('email')?.touched && form.get('email')?.invalid">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-control" formControlName="password" placeholder="******"
+            [class.is-invalid]="form.get('password')?.touched && form.get('password')?.invalid">
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100" [disabled]="form.invalid">
+          Sign In
+        </button>
+      </form>
+
+      <div class="text-center mt-3 text-muted small">
+        <p class="mb-0">Demo Account:</p>
+        <div>Email: admin@example.com</div>
+        <div>Pass: admin123</div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,52 @@
+<div class="d-flex" style="min-height: 100vh;">
+  <!-- Sidebar -->
+  <div class="sidebar-container d-flex flex-column p-4" style="width: 280px; flex-shrink: 0;">
+    <div class="d-flex align-items-center gap-2 mb-5">
+      <div class="bg-gradient-primary rounded-circle d-flex align-items-center justify-content-center"
+        style="width: 40px; height: 40px;">
+        <span class="fw-bold fs-5 text-white">T</span>
+      </div>
+      <div class="fw-bold fs-4 tracking-tight">FinTracker</div>
+    </div>
+
+    <nav class="flex-grow-1">
+      <div class="text-xs text-uppercase text-muted fw-bold mb-3 ms-2"
+        style="font-size: 0.75rem; letter-spacing: 0.05em;">Menu</div>
+
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link-custom">
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/transactions" routerLinkActive="active" class="nav-link-custom">
+        <span>Transactions</span>
+      </a>
+      <a routerLink="/categories" routerLinkActive="active" class="nav-link-custom">
+        <span>Categories</span>
+      </a>
+    </nav>
+
+    <div class="mt-auto">
+      <hr class="border-secondary opacity-25 my-3" />
+      <button class="nav-link-custom w-100 border-0 bg-transparent text-start text-danger" (click)="logout()">
+        <span>Sign Out</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="flex-grow-1 bg-light">
+    <!-- Top Header -->
+    <header class="bg-white border-bottom px-4 py-3 d-flex align-items-center justify-content-between sticky-top">
+      <h5 class="m-0 fw-bold text-dark">Overview</h5>
+      <div class="d-flex align-items-center gap-3">
+        <div class="rounded-circle bg-gray-200 border d-flex align-items-center justify-content-center"
+          style="width: 36px; height: 36px; background: #E5E7EB;">
+          <span class="fw-bold text-muted small">JD</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="p-4 p-lg-5">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
