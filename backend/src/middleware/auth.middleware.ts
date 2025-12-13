@@ -12,7 +12,7 @@ export async function authMiddleware(req: any, res: any, next: any) {
     if (!token) return res.status(401).json({ message: 'Unauthorized' });
 
     try {
-        const payload = jwt.verify(token, process.env.JWT_SECRET as string) as any;
+        const payload = jwt.verify(token, process.env['JWT_SECRET'] as string) as any;
 
         // Check if ID is valid UUID format before querying
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
