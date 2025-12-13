@@ -10,7 +10,8 @@
     "build:all": "ng build && npm run build --prefix backend",
     "start:prod": "npm start --prefix backend",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "postinstall": "npm install --prefix backend"
   },
   "prettier": {
     "printWidth": 100,
