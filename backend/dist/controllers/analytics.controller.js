@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getHeatmap = getHeatmap;
 exports.getWaterfall = getWaterfall;
 exports.getRollups = getRollups;
+exports.getMonthlyInsights = getMonthlyInsights;
 const db_1 = require("../config/db");
 const Transaction_1 = require("../entities/Transaction");
 const WeeklyRollup_1 = require("../entities/WeeklyRollup");
@@ -86,5 +87,64 @@ async function getRollups(req, res) {
     catch (e) {
         console.error('rollups error', e);
         res.status(500).json({ message: 'Error fetching rollups' });
+    }
+}
+// New Insights Endpoints reading from MonthlyRollup
+const MonthlyRollup_1 = require("../entities/MonthlyRollup");
+async function getMonthlyInsights(req, res) {
+    try {
+        const repo = db_1.AppDataSource.getRepository(MonthlyRollup_1.MonthlyRollup);
+        const userId = req.user.id;
+        const { month } = req.query; // YYYY-MM-01 format expected
+        if (!month) {
+            return res.status(400).json({ message: 'Month parameter (YYYY-MM-01) is required' });
+        }
+        const currentMonth = month;
+        // Calculate previous month
+        const d = new Date(currentMonth);
+        d.setMonth(d.getMonth() - 1);
+        const prevMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+        const currentData = await repo.find({ where: { userId, month: currentMonth } });
+        const prevData = await repo.find({ where: { userId, month: prevMonth } });
+        // Summarize totals
+        const currentTotal = currentData.reduce((acc, r) => ({
+            income: acc.income + Number(r.totalIncome),
+            expense: acc.expense + Number(r.totalExpense)
+        }), { income: 0, expense: 0 });
+        const prevTotal = prevData.reduce((acc, r) => ({
+            income: acc.income + Number(r.totalIncome),
+            expense: acc.expense + Number(r.totalExpense)
+        }), { income: 0, expense: 0 });
+        // Compare categories
+        const categoriesDiff = currentData.map(c => {
+            const prev = prevData.find(p => p.categoryId === c.categoryId);
+            const prevExpense = prev ? Number(prev.totalExpense) : 0;
+            const currExpense = Number(c.totalExpense);
+            const diff = currExpense - prevExpense;
+            const pct = prevExpense > 0 ? (diff / prevExpense) * 100 : (currExpense > 0 ? 100 : 0);
+            return {
+                categoryId: c.categoryId,
+                current: currExpense,
+                previous: prevExpense,
+                diff,
+                pct,
+                isUnusual: currExpense > (prevExpense * 1.3) && currExpense > 50 // Simple threshold: 30% more and absolute > 50
+            };
+        });
+        // Sort by biggest absolute increase
+        categoriesDiff.sort((a, b) => b.diff - a.diff);
+        res.json({
+            current: currentTotal,
+            previous: prevTotal,
+            delta: {
+                income: currentTotal.income - prevTotal.income,
+                expense: currentTotal.expense - prevTotal.expense
+            },
+            categoryDetails: categoriesDiff
+        });
+    }
+    catch (e) {
+        console.error('insights error', e);
+        res.status(500).json({ message: 'Error fetching insights' });
     }
 }

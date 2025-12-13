@@ -17,7 +17,7 @@ export async function getCategories(req: any, res: any) {
 
 export async function createCategory(req: any, res: any) {
     try {
-        const { name, type } = req.body;
+        const { name, type, budget } = req.body;
         if (!name) return res.status(400).json({ message: 'name required' });
         if (!['income', 'expense', 'both'].includes(type)) return res.status(400).json({ message: 'invalid type' });
         const categoryRepo = AppDataSource.getRepository(Category);
@@ -26,6 +26,7 @@ export async function createCategory(req: any, res: any) {
             userId: req.user.id,
             name,
             type,
+            budget: budget ? Number(budget) : 0
         });
         await categoryRepo.save(cat);
         res.json(cat);

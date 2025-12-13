@@ -1,13 +1,16 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { CategoryService } from '../../services/category.service';
 import { TransactionService } from '../../services/transaction.service';
 import { NotificationsService } from '../../services/notifications.service';
+import { ThemeService } from '../../services/theme.service';
+import { BottomNavComponent } from '../../components/bottom-nav/bottom-nav.component';
 
 @Component({
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, BottomNavComponent, CommonModule],
   templateUrl: './layout.component.html',
 })
 export class LayoutComponent implements OnInit {
@@ -16,6 +19,7 @@ export class LayoutComponent implements OnInit {
   private cats = inject(CategoryService);
   private tx = inject(TransactionService);
   private ns = inject(NotificationsService);
+  public themeService = inject(ThemeService);
 
   unreadCount = 0;
 

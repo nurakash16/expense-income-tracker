@@ -3,21 +3,33 @@ import { HttpClient } from '@angular/common/http';
 import { Transaction } from '../models/transaction.model';
 import { tap, of } from 'rxjs';
 import { ApiClientService } from './api-client.service';
+import { StorageService } from './storage.service';
 
 @Injectable({ providedIn: 'root' })
 export class TransactionService {
   transactions = signal<Transaction[]>([]);
 
-  constructor(private http: HttpClient, private api: ApiClientService) {}
+  constructor(private http: HttpClient, private api: ApiClientService, private storage: StorageService) {
+    this.transactions.set(this.storage.get<Transaction[]>('CACHE_TRANSACTIONS', []));
+    // Load stats cache if useful, or leave it memory-only for now (since it depends on params)
+    const cachedStats = this.storage.get('CACHE_STATS', null);
+    if (cachedStats) this._statsCache.set('DEFAULT', cachedStats);
+  }
 
   getAll(params?: { type?: 'income' | 'expense'; start?: string; end?: string; q?: string }, opts: { force?: boolean } = {}) {
-    if (!opts.force && this.transactions().length && !params) {
-      return of(this.transactions());
-    }
+    // Always fetch to ensure we have the latest data (Background Refresh)
     const query = new URLSearchParams(params as any).toString();
     const url = `/transactions${query ? `?${query}` : ''}`;
     return this.api.get<Transaction[]>(url).pipe(
-      tap((list) => this.transactions.set(list))
+      tap((list) => {
+        if (!params) { // Only cache full list
+          this.transactions.set(list);
+          this.storage.set('CACHE_TRANSACTIONS', list.slice(0, 100)); // Limit to last 100
+        } else {
+          this.transactions.set(list); // Update signal even if filtered? Maybe not.
+          // Usually signal holds "current view".
+        }
+      })
     );
   }
 

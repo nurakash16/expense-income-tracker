@@ -7,7 +7,7 @@ import authRoutes from './routes/auth.routes';
 import categoryRoutes from './routes/category.routes';
 import transactionRoutes from './routes/transaction.routes';
 import { getKpis } from './controllers/kpi.controller';
-import { getHeatmap, getWaterfall, getRollups } from './controllers/analytics.controller';
+import { getHeatmap, getWaterfall, getRollups, getMonthlyInsights } from './controllers/analytics.controller';
 import { authMiddleware } from './middleware/auth.middleware';
 
 import notificationsRoutes from './routes/notifications.routes';
@@ -33,6 +33,7 @@ app.get('/api/kpi', authMiddleware as any, getKpis);
 app.get('/api/analytics/heatmap', authMiddleware as any, getHeatmap);
 app.get('/api/analytics/waterfall', authMiddleware as any, getWaterfall);
 app.get('/api/analytics/rollups', authMiddleware as any, getRollups);
+app.get('/api/analytics/monthly', authMiddleware as any, getMonthlyInsights);
 
 app.use((err: any, req: any, res: any, next: any) => {
     console.error('Global API Error:', err);

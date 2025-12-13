@@ -20,6 +20,7 @@ export class CategoriesComponent implements OnInit {
   form = this.fb.group({
     name: [''],
     type: ['expense'],
+    budget: [0]
   });
 
   startAdd() {

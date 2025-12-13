@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { ApiClientService } from './api-client.service';
+import { StorageService } from './storage.service';
 import { Category } from '../models/category.model';
 import { tap, of } from 'rxjs';
 
@@ -9,14 +10,18 @@ import { tap, of } from 'rxjs';
 export class CategoryService {
   categories = signal<Category[]>([]);
 
-  constructor(private http: HttpClient, private api: ApiClientService) {}
+  constructor(private http: HttpClient, private api: ApiClientService, private storage: StorageService) {
+    this.categories.set(this.storage.get<Category[]>('CACHE_CATEGORIES', []));
+  }
 
   getAll(force = false) {
-    if (!force && this.categories().length) {
-      return of(this.categories());
-    }
+    // Always fetch directly to update the cache and signal (Background Refresh)
+    // The initial UI is already rendered from the constructor's cache load.
     return this.api.get<Category[]>(`/categories`).pipe(
-      tap((list) => this.categories.set(list))
+      tap((list) => {
+        this.categories.set(list);
+        this.storage.set('CACHE_CATEGORIES', list);
+      })
     );
   }
 

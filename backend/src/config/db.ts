@@ -6,6 +6,7 @@ import { Transaction } from '../entities/Transaction';
 import { WeeklyRollup } from '../entities/WeeklyRollup';
 import { Notification } from '../entities/Notification';
 import { CategoryRule } from '../entities/CategoryRule';
+import { MonthlyRollup } from '../entities/MonthlyRollup';
 
 export const AppDataSource = new DataSource({
     type: 'postgres',
@@ -16,7 +17,7 @@ export const AppDataSource = new DataSource({
     database: process.env['DB_NAME'],
     synchronize: false,
     logging: false,
-    entities: [User, Category, Transaction, WeeklyRollup, Notification, CategoryRule],
+    entities: [User, Category, Transaction, WeeklyRollup, Notification, CategoryRule, MonthlyRollup],
     migrations: ['dist/migrations/*.js'],
 
     ssl: (!process.env['DB_HOST'] || process.env['DB_HOST'] === 'localhost' || process.env['DB_HOST'] === '127.0.0.1')
@@ -24,9 +25,25 @@ export const AppDataSource = new DataSource({
         : { rejectUnauthorized: false }
 });
 
+
+let dbInitializationPromise: Promise<DataSource> | null = null;
+
 export async function connectDB() {
-    if (!AppDataSource.isInitialized) {
-        await AppDataSource.initialize();
+    if (AppDataSource.isInitialized) {
+        return;
+    }
+
+    if (!dbInitializationPromise) {
+        dbInitializationPromise = AppDataSource.initialize();
+    }
+
+    try {
+        await dbInitializationPromise;
         console.log('✅ PostgreSQL connected');
+    } catch (error) {
+        console.error('❌ Database connection failed:', error);
+        dbInitializationPromise = null; // Reset on failure to allow retry
+        throw error;
     }
 }
+

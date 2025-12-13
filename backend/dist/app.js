@@ -32,6 +32,7 @@ app.get('/api/kpi', auth_middleware_1.authMiddleware, kpi_controller_1.getKpis);
 app.get('/api/analytics/heatmap', auth_middleware_1.authMiddleware, analytics_controller_1.getHeatmap);
 app.get('/api/analytics/waterfall', auth_middleware_1.authMiddleware, analytics_controller_1.getWaterfall);
 app.get('/api/analytics/rollups', auth_middleware_1.authMiddleware, analytics_controller_1.getRollups);
+app.get('/api/analytics/monthly', auth_middleware_1.authMiddleware, analytics_controller_1.getMonthlyInsights);
 app.use((err, req, res, next) => {
     console.error('Global API Error:', err);
     res.status(500).json({

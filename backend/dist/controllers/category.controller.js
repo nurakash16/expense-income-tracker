@@ -21,7 +21,7 @@ async function getCategories(req, res) {
 }
 async function createCategory(req, res) {
     try {
-        const { name, type } = req.body;
+        const { name, type, budget } = req.body;
         if (!name)
             return res.status(400).json({ message: 'name required' });
         if (!['income', 'expense', 'both'].includes(type))
@@ -31,6 +31,7 @@ async function createCategory(req, res) {
             userId: req.user.id,
             name,
             type,
+            budget: budget ? Number(budget) : 0
         });
         await categoryRepo.save(cat);
         res.json(cat);

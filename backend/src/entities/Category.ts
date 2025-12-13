@@ -30,6 +30,9 @@ export class Category {
     })
     type!: CategoryType;
 
+    @Column({ type: 'decimal', precision: 12, scale: 2, default: 0, nullable: true })
+    budget?: number;
+
     @OneToMany(() => Transaction, (transaction) => transaction.category)
     transactions!: Transaction[];
 

@@ -48,6 +48,10 @@ __decorate([
     __metadata("design:type", String)
 ], Category.prototype, "type", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'decimal', precision: 12, scale: 2, default: 0, nullable: true }),
+    __metadata("design:type", Number)
+], Category.prototype, "budget", void 0);
+__decorate([
     (0, typeorm_1.OneToMany)(() => Transaction_1.Transaction, (transaction) => transaction.category),
     __metadata("design:type", Array)
 ], Category.prototype, "transactions", void 0);

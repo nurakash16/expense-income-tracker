@@ -22,6 +22,12 @@
             <input class="form-control bg-light" formControlName="name" placeholder="e.g. Food, Salary" />
           </div>
 
+          <div class="mb-3">
+            <label class="form-label text-muted small fw-bold text-uppercase">Monthly Budget (Optional)</label>
+            <input type="number" class="form-control bg-light" formControlName="budget" placeholder="0.00" />
+            <small class="text-muted" style="font-size: 0.75rem;">Set a limit to get notified when exceeded.</small>
+          </div>
+
           <div class="mb-4">
             <label class="form-label text-muted small fw-bold text-uppercase">Type</label>
             <div class="d-flex flex-column gap-2">
@@ -89,6 +95,9 @@
                     [class.bg-success-subtle]="c.type==='income'" [class.text-success-emphasis]="c.type==='income'"
                     [class.bg-info-subtle]="c.type==='both'" [class.text-info-emphasis]="c.type==='both'">
                     {{ c.type }}
+                  </span>
+                  <span *ngIf="c.budget && c.budget > 0" class="badge bg-light text-dark border ms-2">
+                    Limit: {{ c.budget | currency }}
                   </span>
                 </td>
                 <td class="text-end pe-4">

@@ -96,6 +96,39 @@ async function createTransaction(req, res) {
                 meta: { transactionId: tx.id, amount: absAmount }
             }));
         }
+        // --- Budget Check ---
+        if (type === 'expense') {
+            const cat = await categoryRepo.findOneBy({ id: finalCategoryId });
+            if (cat && cat.budget && Number(cat.budget) > 0) {
+                // Check total expense for this month for this category
+                // We can approximate by querying transactions for this month
+                const now = new Date(date); // use transaction date
+                const startOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+                const endOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-31`;
+                const sumRes = await transactionRepo.createQueryBuilder('t')
+                    .select('SUM(t.amount)', 'total')
+                    .where('t.userId = :uid', { uid: req.user.id })
+                    .andWhere('t.categoryId = :cid', { cid: finalCategoryId })
+                    .andWhere('t.type = :type', { type: 'expense' })
+                    .andWhere('t.date >= :start', { start: startOfMonth })
+                    .andWhere('t.date <= :end', { end: endOfMonth })
+                    .getRawOne();
+                const totalSpent = Number(sumRes?.total || 0);
+                if (totalSpent > Number(cat.budget)) {
+                    const nRepo = db_1.AppDataSource.getRepository(Notification_1.Notification);
+                    // Check if we already notified for this month to avoid spamming?
+                    // Ideally yes, but for now simple trigger is safer than missing it.
+                    // We can assume user wants to know every time they exceed further.
+                    await nRepo.save(nRepo.create({
+                        userId: req.user.id,
+                        type: 'BUDGET_EXCEEDED',
+                        title: 'Budget Exceeded',
+                        message: `You have exceeded your budget for ${cat.name}. Spent: ${totalSpent}, Budget: ${cat.budget}`,
+                        meta: { categoryId: cat.id, budget: cat.budget, total: totalSpent }
+                    }));
+                }
+            }
+        }
         res.json(tx);
     }
     catch (error) {
