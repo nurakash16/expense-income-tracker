@@ -1,7 +1,4 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppDataSource = void 0;
 exports.connectDB = connectDB;
@@ -14,7 +11,9 @@ const WeeklyRollup_1 = require("../entities/WeeklyRollup");
 const Notification_1 = require("../entities/Notification");
 const CategoryRule_1 = require("../entities/CategoryRule");
 const MonthlyRollup_1 = require("../entities/MonthlyRollup");
-const path_1 = __importDefault(require("path"));
+const _1700000000000_NotificationsAndRules_1 = require("../migrations/1700000000000-NotificationsAndRules");
+const _1700000000001_MonthlyRollups_1 = require("../migrations/1700000000001-MonthlyRollups");
+const _1700000000002_AddBudgetToCategory_1 = require("../migrations/1700000000002-AddBudgetToCategory");
 exports.AppDataSource = new typeorm_1.DataSource({
     type: 'postgres',
     host: process.env['DB_HOST'],
@@ -25,7 +24,11 @@ exports.AppDataSource = new typeorm_1.DataSource({
     synchronize: false,
     logging: false,
     entities: [User_1.User, Category_1.Category, Transaction_1.Transaction, WeeklyRollup_1.WeeklyRollup, Notification_1.Notification, CategoryRule_1.CategoryRule, MonthlyRollup_1.MonthlyRollup],
-    migrations: [path_1.default.join(__dirname, '../migrations/*.js')],
+    migrations: [
+        _1700000000000_NotificationsAndRules_1.NotificationsAndRules1700000000000,
+        _1700000000001_MonthlyRollups_1.MonthlyRollups1700000000001,
+        _1700000000002_AddBudgetToCategory_1.AddBudgetToCategory1700000000002
+    ],
     ssl: (!process.env['DB_HOST'] || process.env['DB_HOST'] === 'localhost' || process.env['DB_HOST'] === '127.0.0.1')
         ? false
         : { rejectUnauthorized: false },
