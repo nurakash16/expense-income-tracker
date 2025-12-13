@@ -3,6 +3,8 @@ import { Transaction, TransactionType } from '../entities/Transaction';
 import { Category, CategoryType } from '../entities/Category';
 import ExcelJS from 'exceljs';
 import multer from 'multer';
+import { Notification } from '../entities/Notification';
+import { pickCategoryFromRules } from '../services/categorize.service';
 
 export async function getTransactions(req: any, res: any) {
     try {
@@ -50,7 +52,14 @@ export async function createTransaction(req: any, res: any) {
         const { type, amount, categoryId, date, note, paymentMethod } = req.body || {};
         if (!['income', 'expense'].includes(type)) return res.status(400).json({ message: 'Invalid type' });
         if (typeof amount !== 'number' || isNaN(amount)) return res.status(400).json({ message: 'Invalid amount' });
-        if (!categoryId) return res.status(400).json({ message: 'categoryId required' });
+        let finalCategoryId = categoryId;
+        if (!finalCategoryId) {
+            const text = note || '';
+            const predicted = await pickCategoryFromRules(req.user.id, text);
+            if (predicted) finalCategoryId = predicted;
+        }
+
+        if (!finalCategoryId) return res.status(400).json({ message: 'categoryId required' });
         if (!date) return res.status(400).json({ message: 'date required (YYYY-MM-DD)' });
 
         const transactionRepo = AppDataSource.getRepository(Transaction);
@@ -58,13 +67,26 @@ export async function createTransaction(req: any, res: any) {
         const tx = transactionRepo.create({
             type,
             amount,
-            categoryId,
+            categoryId: finalCategoryId,
             date,
             note,
             paymentMethod,
             userId: req.user.id,
         });
         await transactionRepo.save(tx);
+
+        const absAmount = Math.abs(amount);
+        if (absAmount >= 1000) {
+            const nRepo = AppDataSource.getRepository(Notification);
+            await nRepo.save(nRepo.create({
+                userId: req.user.id,
+                type: 'LARGE_TXN',
+                title: 'Large transaction detected',
+                message: `A transaction of ${absAmount} was added.`,
+                meta: { transactionId: tx.id, amount: absAmount }
+            }));
+        }
+
         res.json(tx);
     } catch (error) {
         console.error(error);

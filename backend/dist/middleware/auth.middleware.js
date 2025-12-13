@@ -15,7 +15,7 @@ async function authMiddleware(req, res, next) {
     if (!token)
         return res.status(401).json({ message: 'Unauthorized' });
     try {
-        const payload = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
+        const payload = jsonwebtoken_1.default.verify(token, process.env['JWT_SECRET']);
         // Check if ID is valid UUID format before querying
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (!uuidRegex.test(payload.id)) {

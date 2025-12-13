@@ -22,6 +22,9 @@
       <a routerLink="/categories" routerLinkActive="active" class="nav-link-custom">
         <span>Categories</span>
       </a>
+      <a routerLink="/rules" routerLinkActive="active" class="nav-link-custom">
+        <span>Rules</span>
+      </a>
     </nav>
 
     <div class="mt-auto">
@@ -38,6 +41,15 @@
     <header class="bg-white border-bottom px-4 py-3 d-flex align-items-center justify-content-between sticky-top">
       <h5 class="m-0 fw-bold text-dark">Overview</h5>
       <div class="d-flex align-items-center gap-3">
+        <a routerLink="/notifications" class="text-decoration-none text-dark position-relative me-2"
+          style="cursor: pointer;">
+          <span class="fs-5">🔔</span>
+          <span *ngIf="unreadCount > 0"
+            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+            style="font-size: 0.6rem;">
+            {{ unreadCount }}
+          </span>
+        </a>
         <div class="rounded-circle bg-gray-200 border d-flex align-items-center justify-content-center"
           style="width: 36px; height: 36px; background: #E5E7EB;">
           <span class="fw-bold text-muted small">JD</span>

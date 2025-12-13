@@ -9,41 +9,41 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = void 0;
+exports.CategoryRule = void 0;
 const typeorm_1 = require("typeorm");
-const Category_1 = require("./Category");
-const Transaction_1 = require("./Transaction");
-let User = class User {
+let CategoryRule = class CategoryRule {
 };
-exports.User = User;
+exports.CategoryRule = CategoryRule;
 __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
     __metadata("design:type", String)
-], User.prototype, "id", void 0);
+], CategoryRule.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ unique: true }),
+    (0, typeorm_1.Index)(),
+    (0, typeorm_1.Column)({ type: 'uuid' }),
     __metadata("design:type", String)
-], User.prototype, "email", void 0);
+], CategoryRule.prototype, "userId", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Index)(),
+    (0, typeorm_1.Column)({ type: 'uuid' }),
     __metadata("design:type", String)
-], User.prototype, "passwordHash", void 0);
+], CategoryRule.prototype, "categoryId", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => Category_1.Category, (category) => category.user),
-    __metadata("design:type", Array)
-], User.prototype, "categories", void 0);
+    (0, typeorm_1.Column)({ type: 'varchar', length: 200 }),
+    __metadata("design:type", String)
+], CategoryRule.prototype, "pattern", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => Transaction_1.Transaction, (transaction) => transaction.user),
-    __metadata("design:type", Array)
-], User.prototype, "transactions", void 0);
+    (0, typeorm_1.Column)({ type: 'boolean', default: false }),
+    __metadata("design:type", Boolean)
+], CategoryRule.prototype, "isRegex", void 0);
 __decorate([
-    (0, typeorm_1.CreateDateColumn)(),
+    (0, typeorm_1.Column)({ type: 'int', default: 100 }),
+    __metadata("design:type", Number)
+], CategoryRule.prototype, "priority", void 0);
+__decorate([
+    (0, typeorm_1.CreateDateColumn)({ type: 'timestamptz' }),
     __metadata("design:type", Date)
-], User.prototype, "createdAt", void 0);
-__decorate([
-    (0, typeorm_1.UpdateDateColumn)(),
-    __metadata("design:type", Date)
-], User.prototype, "updatedAt", void 0);
-exports.User = User = __decorate([
-    (0, typeorm_1.Entity)('users')
-], User);
+], CategoryRule.prototype, "createdAt", void 0);
+exports.CategoryRule = CategoryRule = __decorate([
+    (0, typeorm_1.Entity)({ name: 'category_rules' })
+], CategoryRule);

@@ -15,6 +15,8 @@ const db_1 = require("../config/db");
 const Transaction_1 = require("../entities/Transaction");
 const Category_1 = require("../entities/Category");
 const exceljs_1 = __importDefault(require("exceljs"));
+const Notification_1 = require("../entities/Notification");
+const categorize_service_1 = require("../services/categorize.service");
 async function getTransactions(req, res) {
     try {
         const transactionRepo = db_1.AppDataSource.getRepository(Transaction_1.Transaction);
@@ -60,7 +62,14 @@ async function createTransaction(req, res) {
             return res.status(400).json({ message: 'Invalid type' });
         if (typeof amount !== 'number' || isNaN(amount))
             return res.status(400).json({ message: 'Invalid amount' });
-        if (!categoryId)
+        let finalCategoryId = categoryId;
+        if (!finalCategoryId) {
+            const text = note || '';
+            const predicted = await (0, categorize_service_1.pickCategoryFromRules)(req.user.id, text);
+            if (predicted)
+                finalCategoryId = predicted;
+        }
+        if (!finalCategoryId)
             return res.status(400).json({ message: 'categoryId required' });
         if (!date)
             return res.status(400).json({ message: 'date required (YYYY-MM-DD)' });
@@ -69,13 +78,24 @@ async function createTransaction(req, res) {
         const tx = transactionRepo.create({
             type,
             amount,
-            categoryId,
+            categoryId: finalCategoryId,
             date,
             note,
             paymentMethod,
             userId: req.user.id,
         });
         await transactionRepo.save(tx);
+        const absAmount = Math.abs(amount);
+        if (absAmount >= 1000) {
+            const nRepo = db_1.AppDataSource.getRepository(Notification_1.Notification);
+            await nRepo.save(nRepo.create({
+                userId: req.user.id,
+                type: 'LARGE_TXN',
+                title: 'Large transaction detected',
+                message: `A transaction of ${absAmount} was added.`,
+                meta: { transactionId: tx.id, amount: absAmount }
+            }));
+        }
         res.json(tx);
     }
     catch (error) {
