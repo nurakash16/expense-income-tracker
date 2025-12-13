@@ -35,11 +35,24 @@ app.get('/api/analytics/waterfall', authMiddleware as any, getWaterfall);
 app.get('/api/analytics/rollups', authMiddleware as any, getRollups);
 app.get('/api/analytics/monthly', authMiddleware as any, getMonthlyInsights);
 
+app.get('/api/health', async (req, res) => {
+    try {
+        const { AppDataSource } = require('./config/db');
+        if (!AppDataSource.isInitialized) {
+            return res.status(503).json({ status: 'error', message: 'DB not initialized' });
+        }
+        res.json({ status: 'ok', db: 'connected' });
+    } catch (e: any) {
+        res.status(500).json({ status: 'error', error: e.message });
+    }
+});
+
 app.use((err: any, req: any, res: any, next: any) => {
     console.error('Global API Error:', err);
     res.status(500).json({
         message: err.message || 'Internal Server Error',
-        details: process.env['NODE_ENV'] === 'development' ? err : undefined
+        stack: err.stack, // Exposed for debugging
+        details: err
     });
 });
 

@@ -22,7 +22,10 @@ export const AppDataSource = new DataSource({
 
     ssl: (!process.env['DB_HOST'] || process.env['DB_HOST'] === 'localhost' || process.env['DB_HOST'] === '127.0.0.1')
         ? false
-        : { rejectUnauthorized: false }
+        : { rejectUnauthorized: false },
+    extra: {
+        max: 1 // Limit pool size to 1 usage per Lambda to avoid 'MaxClientsInSessionMode' errors
+    }
 });
 
 

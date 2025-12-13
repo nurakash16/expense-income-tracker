@@ -24,7 +24,10 @@ exports.AppDataSource = new typeorm_1.DataSource({
     migrations: ['dist/migrations/*.js'],
     ssl: (!process.env['DB_HOST'] || process.env['DB_HOST'] === 'localhost' || process.env['DB_HOST'] === '127.0.0.1')
         ? false
-        : { rejectUnauthorized: false }
+        : { rejectUnauthorized: false },
+    extra: {
+        max: 1 // Limit pool size to 1 usage per Lambda to avoid 'MaxClientsInSessionMode' errors
+    }
 });
 let dbInitializationPromise = null;
 async function connectDB() {

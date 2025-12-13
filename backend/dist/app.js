@@ -33,11 +33,24 @@ app.get('/api/analytics/heatmap', auth_middleware_1.authMiddleware, analytics_co
 app.get('/api/analytics/waterfall', auth_middleware_1.authMiddleware, analytics_controller_1.getWaterfall);
 app.get('/api/analytics/rollups', auth_middleware_1.authMiddleware, analytics_controller_1.getRollups);
 app.get('/api/analytics/monthly', auth_middleware_1.authMiddleware, analytics_controller_1.getMonthlyInsights);
+app.get('/api/health', async (req, res) => {
+    try {
+        const { AppDataSource } = require('./config/db');
+        if (!AppDataSource.isInitialized) {
+            return res.status(503).json({ status: 'error', message: 'DB not initialized' });
+        }
+        res.json({ status: 'ok', db: 'connected' });
+    }
+    catch (e) {
+        res.status(500).json({ status: 'error', error: e.message });
+    }
+});
 app.use((err, req, res, next) => {
     console.error('Global API Error:', err);
     res.status(500).json({
         message: err.message || 'Internal Server Error',
-        details: process.env['NODE_ENV'] === 'development' ? err : undefined
+        stack: err.stack, // Exposed for debugging
+        details: err
     });
 });
 exports.default = app;
