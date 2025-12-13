@@ -6,7 +6,7 @@
     "start": "concurrently -k \"npm:backend\" \"npm:frontend\"",
     "frontend": "ng serve",
     "backend": "npm --prefix backend run dev",
-    "build": "ng build",
+    "build": "npm run build:all",
     "build:all": "ng build && npm run build --prefix backend",
     "start:prod": "npm start --prefix backend",
     "watch": "ng build --watch --configuration development",

@@ -4,32 +4,23 @@ import { User } from '../entities/User';
 import { Category } from '../entities/Category';
 import { Transaction } from '../entities/Transaction';
 import { WeeklyRollup } from '../entities/WeeklyRollup';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 export const AppDataSource = new DataSource({
-    type: 'postgres',
-    host: process.env['DB_HOST'] || 'localhost',
-    port: Number(process.env['DB_PORT']) || 5432,
-    username: process.env['DB_USERNAME'] || 'postgres',
-    password: process.env['DB_PASSWORD'] || 'postgres',
-    database: process.env['DB_NAME'] || 'postgres',
-    ssl:
-        (process.env['NODE_ENV'] === 'production' ||
-            (process.env['DB_HOST'] || '').includes('supabase'))
-            ? { rejectUnauthorized: false }
-            : false,
+  type: 'postgres',
+  host: process.env['DB_HOST'],
+  port: Number(process.env['DB_PORT']),
+  username: process.env['DB_USERNAME'],
+  password: process.env['DB_PASSWORD'],
+  database: process.env['DB_NAME'],
+  synchronize: true,
+  logging: false,
+  entities: [User, Category, Transaction, WeeklyRollup],
+  ssl: { rejectUnauthorized: false }
 });
 
-export const connectDB = async () => {
-    try {
-        if (!AppDataSource.isInitialized) {
-            await AppDataSource.initialize();
-            console.log('✅ PostgreSQL connected');
-        }
-    } catch (err) {
-        console.error('❌ PostgreSQL connection error', err);
-        throw err;
-    }
-};
+export async function connectDB() {
+  if (!AppDataSource.isInitialized) {
+    await AppDataSource.initialize();
+    console.log('✅ PostgreSQL connected');
+  }
+}

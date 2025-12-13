@@ -12,30 +12,29 @@ import { authMiddleware } from './middleware/auth.middleware';
 
 const app = express();
 
-// CORS: allow dev origins and Authorization header
 app.use(cors({
-    origin: (origin, cb) => cb(null, true),
-    credentials: false,
-    allowedHeaders: ['Authorization', 'Content-Type'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  origin: (origin, cb) => cb(null, true),
+  credentials: false,
+  allowedHeaders: ['Authorization', 'Content-Type'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/transactions', transactionRoutes);
+
 app.get('/api/kpi', authMiddleware as any, getKpis);
 app.get('/api/analytics/heatmap', authMiddleware as any, getHeatmap);
 app.get('/api/analytics/waterfall', authMiddleware as any, getWaterfall);
 app.get('/api/analytics/rollups', authMiddleware as any, getRollups);
 
-// Global Error Handler
 app.use((err: any, req: any, res: any, next: any) => {
-    console.error('Global API Error:', err);
-    res.status(500).json({
-        message: err.message || 'Internal Server Error',
-        details: process.env['NODE_ENV'] === 'development' ? err : undefined
-    });
+  console.error('Global API Error:', err);
+  res.status(500).json({
+    message: err.message || 'Internal Server Error',
+    details: process.env['NODE_ENV'] === 'development' ? err : undefined
+  });
 });
 
 export default app;
