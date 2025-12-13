@@ -42,7 +42,12 @@ async function connectDB() {
         return;
     }
     if (!dbInitializationPromise) {
-        dbInitializationPromise = exports.AppDataSource.initialize();
+        dbInitializationPromise = exports.AppDataSource.initialize().then(async (source) => {
+            console.log('Running pending migrations...');
+            const migrations = await source.runMigrations();
+            console.log(`Migrations executed: ${migrations.length}`);
+            return source;
+        });
     }
     try {
         await dbInitializationPromise;
