@@ -30,6 +30,15 @@ export class CategoryService {
       .pipe(tap(newCat => this.categories.update(list => [newCat, ...list])));
   }
 
+
+
+  update(id: string, cat: Partial<Category>) {
+    return this.api.put<Category>(`/categories/${id}`, cat)
+      .pipe(tap(updatedCat => {
+        this.categories.update(list => list.map(c => c.id === id ? updatedCat : c));
+      }));
+  }
+
   delete(id: string) {
     return this.api.delete(`/categories/${id}`)
       .pipe(tap(() => this.categories.update(list => list.filter(c => c.id !== id))));

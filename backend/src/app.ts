@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import './config/env';
 
 import authRoutes from './routes/auth.routes';
@@ -22,6 +23,7 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 app.use(express.json());
+app.use(compression());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);

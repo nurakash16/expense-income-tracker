@@ -38,7 +38,9 @@ export class CategoriesComponent implements OnInit {
 
   save() {
     if (this.editingId()) {
-      // Update logic
+      this.service.update(this.editingId()!, this.form.value as any).subscribe(() => {
+        this.startAdd();
+      });
     } else {
       this.service.create(this.form.value as any).subscribe(() => {
         this.startAdd(); // reset

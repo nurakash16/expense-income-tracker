@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
+const compression_1 = __importDefault(require("compression"));
 require("./config/env");
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const category_routes_1 = __importDefault(require("./routes/category.routes"));
@@ -23,6 +24,7 @@ app.use((0, cors_1.default)({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 app.use(express_1.default.json());
+app.use((0, compression_1.default)());
 app.use('/api/auth', auth_routes_1.default);
 app.use('/api/categories', category_routes_1.default);
 app.use('/api/transactions', transaction_routes_1.default);

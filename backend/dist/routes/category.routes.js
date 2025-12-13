@@ -6,5 +6,6 @@ const category_controller_1 = require("../controllers/category.controller");
 const router = (0, express_1.Router)();
 router.get('/', auth_middleware_1.authMiddleware, category_controller_1.getCategories);
 router.post('/', auth_middleware_1.authMiddleware, category_controller_1.createCategory);
+router.put('/:id', auth_middleware_1.authMiddleware, category_controller_1.updateCategory);
 router.delete('/:id', auth_middleware_1.authMiddleware, category_controller_1.deleteCategory);
 exports.default = router;
