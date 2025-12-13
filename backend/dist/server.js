@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
+require("./config/env"); // Must be first
 const path_1 = __importDefault(require("path"));
 const express_1 = __importDefault(require("express"));
 const db_1 = require("./config/db");

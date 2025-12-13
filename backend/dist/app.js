@@ -25,11 +25,15 @@ app.use((0, cors_1.default)({
 }));
 app.use(express_1.default.json());
 app.use((0, compression_1.default)());
+const salary_routes_1 = __importDefault(require("./routes/salary.routes"));
+const settings_routes_1 = __importDefault(require("./routes/settings.routes"));
 app.use('/api/auth', auth_routes_1.default);
 app.use('/api/categories', category_routes_1.default);
 app.use('/api/transactions', transaction_routes_1.default);
 app.use('/api/notifications', notifications_routes_1.default);
 app.use('/api/category-rules', categoryRules_routes_1.default);
+app.use('/api/salary', salary_routes_1.default);
+app.use('/api/settings', settings_routes_1.default);
 app.get('/api/kpi', auth_middleware_1.authMiddleware, kpi_controller_1.getKpis);
 app.get('/api/analytics/heatmap', auth_middleware_1.authMiddleware, analytics_controller_1.getHeatmap);
 app.get('/api/analytics/waterfall', auth_middleware_1.authMiddleware, analytics_controller_1.getWaterfall);

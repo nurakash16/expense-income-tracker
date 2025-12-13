@@ -3,10 +3,10 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'app-bottom-nav',
-    standalone: true,
-    imports: [CommonModule, RouterModule],
-    template: `
+  selector: 'app-bottom-nav',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
     <nav class="fixed-bottom bg-white border-top safe-area" style="z-index: 1040;">
       <div class="container-fluid">
         <div class="row text-center py-2 gx-0">
@@ -46,6 +46,15 @@ import { CommonModule } from '@angular/common';
             </a>
           </div>
           <div class="col">
+            <a routerLink="/settings" routerLinkActive="active-nav" class="nav-link p-1 text-muted d-flex flex-column align-items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-gear mb-1" viewBox="0 0 16 16">
+                <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319A8.016 8.016 0 0 0 4.58 3.099l-.254-.255c-1.274-1.274-2.845-.633-2.845.84v.27c.001.458.113.913.324 1.347l.015.036c.26.63.632 1.202 1.09 1.66l.27.27c.41.41 1.082.666 1.768.666h.002c.07 0 .14-.004.21-.011l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a8.016 8.016 0 0 0 2.055-1.816l.254.255c1.274 1.274 2.845.633 2.845-.84v-.27a2.74 2.74 0 0 0-.324-1.347l-.015-.036a6.01 6.01 0 0 0-1.09-1.66l-.27-.27a2.75 2.75 0 0 0-1.768-.666h-.002a2.74 2.74 0 0 0-.21.011l-.094-.319Zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.74 1.74 0 0 0 1.296 1.035l.319.094c.835.246.835 1.428 0 1.674l-.319.094a1.74 1.74 0 0 0-1.296 1.035l-.094.319c-.246.835-1.428.835-1.674 0l-.094-.319a1.74 1.74 0 0 0-1.296-1.035l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094a1.74 1.74 0 0 0 1.296-1.035l.094-.319Z"/>
+              </svg>
+              <small>Settings</small>
+            </a>
+          </div>
+          <div class="col">
             <a routerLink="/insights" routerLinkActive="active-nav" class="nav-link p-1 text-muted d-flex flex-column align-items-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-graph-up-arrow mb-1" viewBox="0 0 16 16">
                  <path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0Zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5Z"/>
@@ -65,7 +74,7 @@ import { CommonModule } from '@angular/common';
       </div>
     </nav>
   `,
-    styles: [`
+  styles: [`
     .nav-link { font-size: 0.75rem; color: #6c757d; }
     .nav-link.active-nav { color: #0d6efd !important; font-weight: 600; }
     .safe-area { padding-bottom: env(safe-area-inset-bottom); }

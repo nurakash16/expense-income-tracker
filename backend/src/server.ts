@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import './config/env'; // Must be first
 import path from 'path';
 import express from 'express';
 import { connectDB } from './config/db';

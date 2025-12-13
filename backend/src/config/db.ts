@@ -7,9 +7,12 @@ import { WeeklyRollup } from '../entities/WeeklyRollup';
 import { Notification } from '../entities/Notification';
 import { CategoryRule } from '../entities/CategoryRule';
 import { MonthlyRollup } from '../entities/MonthlyRollup';
+import { MonthlySalary } from '../entities/MonthlySalary';
+import { UserSettings } from '../entities/UserSettings';
 import { NotificationsAndRules1700000000000 } from '../migrations/1700000000000-NotificationsAndRules';
 import { MonthlyRollups1700000000001 } from '../migrations/1700000000001-MonthlyRollups';
 import { AddBudgetToCategory1700000000002 } from '../migrations/1700000000002-AddBudgetToCategory';
+import { AddSalaryAndSettings1700000000003 } from '../migrations/1700000000003-AddSalaryAndSettings';
 
 export const AppDataSource = new DataSource({
     type: 'postgres',
@@ -20,11 +23,12 @@ export const AppDataSource = new DataSource({
     database: process.env['DB_NAME'],
     synchronize: false,
     logging: false,
-    entities: [User, Category, Transaction, WeeklyRollup, Notification, CategoryRule, MonthlyRollup],
+    entities: [User, Category, Transaction, WeeklyRollup, Notification, CategoryRule, MonthlyRollup, MonthlySalary, UserSettings],
     migrations: [
         NotificationsAndRules1700000000000,
         MonthlyRollups1700000000001,
-        AddBudgetToCategory1700000000002
+        AddBudgetToCategory1700000000002,
+        AddSalaryAndSettings1700000000003
     ],
 
     ssl: (!process.env['DB_HOST'] || process.env['DB_HOST'] === 'localhost' || process.env['DB_HOST'] === '127.0.0.1')

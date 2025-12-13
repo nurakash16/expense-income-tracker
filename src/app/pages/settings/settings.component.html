@@ -1,0 +1,145 @@
+<div class="container-fluid p-3 p-md-4">
+    <div class="d-flex align-items-center gap-2 mb-4">
+        <mat-icon class="text-primary">settings</mat-icon>
+        <h4 class="fw-bold m-0">Account Settings</h4>
+    </div>
+
+    <div class="row g-4">
+        <!-- Appearance -->
+        <div class="col-12 col-md-6">
+            <mat-card class="glass-card h-100">
+                <div class="p-3 border-bottom">
+                    <h6 class="m-0 fw-bold">Appearance</h6>
+                </div>
+                <div class="p-3">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Theme</label>
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-select [(ngModel)]="model().theme">
+                                <mat-option value="light">Light</mat-option>
+                                <mat-option value="dark">Dark</mat-option>
+                                <mat-option value="system">System Default</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Accent Color</label>
+                        <div class="d-flex gap-2">
+                            <div *ngFor="let c of ['#6200ee', '#009688', '#E91E63', '#FF9800', '#2196F3']"
+                                class="rounded-circle cursor-pointer border" [style.background]="c"
+                                [style.width.px]="32" [style.height.px]="32" [class.ring]="model().accentColor === c"
+                                (click)="model().accentColor = c">
+                            </div>
+                        </div>
+                        <small class="text-muted d-block mt-1">Selected: {{ model().accentColor }}</small>
+                    </div>
+                </div>
+            </mat-card>
+        </div>
+
+        <!-- General -->
+        <div class="col-12 col-md-6">
+            <mat-card class="glass-card h-100">
+                <div class="p-3 border-bottom">
+                    <h6 class="m-0 fw-bold">General</h6>
+                </div>
+                <div class="p-3">
+                    <!-- Profile Name (Visual only for now if User entity not editable here) -->
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Display Name</label>
+                        <input type="text" class="form-control" placeholder="Your Name" value="User">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Currency</label>
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-select [(ngModel)]="model().currency">
+                                <mat-option value="BDT">BDT (৳)</mat-option>
+                                <mat-option value="USD">USD ($)</mat-option>
+                                <mat-option value="EUR">EUR (€)</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                </div>
+            </mat-card>
+        </div>
+
+        <!-- Data Management -->
+        <div class="col-12 col-md-6">
+            <mat-card class="glass-card h-100">
+                <div class="p-3 border-bottom">
+                    <h6 class="m-0 fw-bold">Data Management</h6>
+                </div>
+                <div class="p-3">
+                    <div class="d-flex flex-column gap-3">
+                        <button mat-stroked-button (click)="exportData()">
+                            <mat-icon>download</mat-icon> Export Backup (JSON)
+                        </button>
+
+                        <div>
+                            <button mat-stroked-button (click)="fileInput.click()">
+                                <mat-icon>upload</mat-icon> Restore Backup
+                            </button>
+                            <input #fileInput type="file" hidden (change)="importData($event)" accept=".json">
+                        </div>
+                    </div>
+                </div>
+            </mat-card>
+        </div>
+
+        <!-- Notifications -->
+        <div class="col-12">
+            <mat-card class="glass-card">
+                <div class="p-3 border-bottom">
+                    <h6 class="m-0 fw-bold">Notifications</h6>
+                </div>
+                <div class="p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="fw-medium">Unusual Spending</div>
+                            <small class="text-muted">Alert when category spend exceeds 3-month average</small>
+                        </div>
+                        <mat-slide-toggle color="primary"
+                            [(ngModel)]="model().notificationPrefs.unusualSpending"></mat-slide-toggle>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="fw-medium">Budget Alerts</div>
+                            <small class="text-muted">Notify when 90% and 100% of budget is reached</small>
+                        </div>
+                        <mat-slide-toggle color="primary"
+                            [(ngModel)]="model().notificationPrefs.budgetAlerts"></mat-slide-toggle>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-medium">Large Transactions</div>
+                            <small class="text-muted">Flag transactions over 10,000</small>
+                        </div>
+                        <mat-slide-toggle color="primary"
+                            [(ngModel)]="model().notificationPrefs.largeTransactions"></mat-slide-toggle>
+                    </div>
+                </div>
+            </mat-card>
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex justify-content-end">
+        <button mat-flat-button color="primary" (click)="save()">
+            <mat-icon>save</mat-icon> Save Changes
+        </button>
+    </div>
+</div>
+
+<style>
+    .ring {
+        outline: 2px solid #6200ee;
+        outline-offset: 2px;
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+</style>

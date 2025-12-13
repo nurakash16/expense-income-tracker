@@ -33,6 +33,10 @@ export class ApiClientService {
     return this.request<T>('POST', path, body, options);
   }
 
+  patch<T>(path: string, body: any, options: { params?: Record<string, any> } = {}): Observable<T> {
+    return this.request<T>('PATCH', path, body, options);
+  }
+
   put<T>(path: string, body: any, options: { params?: Record<string, any> } = {}): Observable<T> {
     return this.request<T>('PUT', path, body, options);
   }

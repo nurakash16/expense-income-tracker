@@ -25,11 +25,16 @@ app.use(cors({
 app.use(express.json());
 app.use(compression());
 
+import salaryRoutes from './routes/salary.routes';
+import settingsRoutes from './routes/settings.routes';
+
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/category-rules', categoryRulesRoutes);
+app.use('/api/salary', salaryRoutes);
+app.use('/api/settings', settingsRoutes);
 
 app.get('/api/kpi', authMiddleware as any, getKpis);
 app.get('/api/analytics/heatmap', authMiddleware as any, getHeatmap);
