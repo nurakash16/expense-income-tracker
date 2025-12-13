@@ -48,7 +48,7 @@ export class ApiClientService {
       const cleanParams: Record<string, any> = {};
       Object.keys(options.params).forEach(key => {
         const val = options.params![key];
-        if (val !== undefined && val !== null) {
+        if (val !== undefined && val !== null && val !== 'undefined' && val !== 'null' && val !== '') {
           cleanParams[key] = val;
         }
       });
@@ -74,7 +74,7 @@ export class ApiClientService {
       const cleanParams: Record<string, any> = {};
       Object.keys(options.params).forEach(key => {
         const val = options.params![key];
-        if (val !== undefined && val !== null) {
+        if (val !== undefined && val !== null && val !== 'undefined' && val !== 'null' && val !== '') {
           cleanParams[key] = val;
         }
       });
