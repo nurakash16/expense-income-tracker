@@ -33,6 +33,25 @@ app.get('/api/analytics/heatmap', auth_middleware_1.authMiddleware, analytics_co
 app.get('/api/analytics/waterfall', auth_middleware_1.authMiddleware, analytics_controller_1.getWaterfall);
 app.get('/api/analytics/rollups', auth_middleware_1.authMiddleware, analytics_controller_1.getRollups);
 app.get('/api/analytics/monthly', auth_middleware_1.authMiddleware, analytics_controller_1.getMonthlyInsights);
+// Manual migration trigger for serverless environments
+const db_1 = require("./config/db");
+app.get('/api/migrate-now', async (req, res) => {
+    try {
+        if (!db_1.AppDataSource.isInitialized) {
+            await db_1.AppDataSource.initialize();
+        }
+        const migrations = await db_1.AppDataSource.runMigrations();
+        res.json({
+            message: 'Migrations executed successfully',
+            count: migrations.length,
+            migrations: migrations.map(m => m.name)
+        });
+    }
+    catch (e) {
+        console.error('Migration failed:', e);
+        res.status(500).json({ error: e.message, stack: e.stack });
+    }
+});
 app.get('/api/health', async (req, res) => {
     try {
         const { AppDataSource } = require('./config/db');

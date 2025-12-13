@@ -8,6 +8,8 @@ import { Notification } from '../entities/Notification';
 import { CategoryRule } from '../entities/CategoryRule';
 import { MonthlyRollup } from '../entities/MonthlyRollup';
 
+import path from 'path';
+
 export const AppDataSource = new DataSource({
     type: 'postgres',
     host: process.env['DB_HOST'],
@@ -18,7 +20,7 @@ export const AppDataSource = new DataSource({
     synchronize: false,
     logging: false,
     entities: [User, Category, Transaction, WeeklyRollup, Notification, CategoryRule, MonthlyRollup],
-    migrations: ['dist/migrations/*.js'],
+    migrations: [path.join(__dirname, '../migrations/*.js')],
 
     ssl: (!process.env['DB_HOST'] || process.env['DB_HOST'] === 'localhost' || process.env['DB_HOST'] === '127.0.0.1')
         ? false

@@ -35,6 +35,25 @@ app.get('/api/analytics/waterfall', authMiddleware as any, getWaterfall);
 app.get('/api/analytics/rollups', authMiddleware as any, getRollups);
 app.get('/api/analytics/monthly', authMiddleware as any, getMonthlyInsights);
 
+// Manual migration trigger for serverless environments
+import { AppDataSource } from './config/db';
+app.get('/api/migrate-now', async (req, res) => {
+    try {
+        if (!AppDataSource.isInitialized) {
+            await AppDataSource.initialize();
+        }
+        const migrations = await AppDataSource.runMigrations();
+        res.json({
+            message: 'Migrations executed successfully',
+            count: migrations.length,
+            migrations: migrations.map(m => m.name)
+        });
+    } catch (e: any) {
+        console.error('Migration failed:', e);
+        res.status(500).json({ error: e.message, stack: e.stack });
+    }
+});
+
 app.get('/api/health', async (req, res) => {
     try {
         const { AppDataSource } = require('./config/db');
