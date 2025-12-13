@@ -43,7 +43,17 @@ export class ApiClientService {
 
   getBlob(path: string, options: { params?: Record<string, any> } = {}): Observable<Blob> {
     const url = this.getUrl(path);
-    const httpParams = options.params ? new HttpParams({ fromObject: options.params }) : undefined;
+    let httpParams: HttpParams | undefined;
+    if (options.params) {
+      const cleanParams: Record<string, any> = {};
+      Object.keys(options.params).forEach(key => {
+        const val = options.params![key];
+        if (val !== undefined && val !== null) {
+          cleanParams[key] = val;
+        }
+      });
+      httpParams = new HttpParams({ fromObject: cleanParams });
+    }
 
     return this.http.get(url, { responseType: 'blob', params: httpParams }).pipe(
       // Standardized retry logic could be applied here too if valuable, 
@@ -57,7 +67,19 @@ export class ApiClientService {
 
   private request<T>(method: string, path: string, body?: any, options: { params?: Record<string, any> } = {}): Observable<T> {
     const url = this.getUrl(path);
-    const httpParams = options.params ? new HttpParams({ fromObject: options.params }) : undefined;
+
+    let httpParams: HttpParams | undefined;
+    if (options.params) {
+      // Filter out undefined/null values
+      const cleanParams: Record<string, any> = {};
+      Object.keys(options.params).forEach(key => {
+        const val = options.params![key];
+        if (val !== undefined && val !== null) {
+          cleanParams[key] = val;
+        }
+      });
+      httpParams = new HttpParams({ fromObject: cleanParams });
+    }
 
     return this.http.request<T>(method, url, {
       body,
