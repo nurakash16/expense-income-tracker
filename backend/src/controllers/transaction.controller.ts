@@ -4,7 +4,6 @@ import { Category, CategoryType } from '../entities/Category';
 import ExcelJS from 'exceljs';
 import multer from 'multer';
 import { Notification } from '../entities/Notification';
-import { pickCategoryFromRules } from '../services/categorize.service';
 
 export async function getTransactions(req: any, res: any) {
     try {
@@ -52,13 +51,7 @@ export async function createTransaction(req: any, res: any) {
         const { type, amount, categoryId, date, note, paymentMethod } = req.body || {};
         if (!['income', 'expense'].includes(type)) return res.status(400).json({ message: 'Invalid type' });
         if (typeof amount !== 'number' || isNaN(amount)) return res.status(400).json({ message: 'Invalid amount' });
-        let finalCategoryId = categoryId;
-        if (!finalCategoryId) {
-            const text = note || '';
-            const predicted = await pickCategoryFromRules(req.user.id, text);
-            if (predicted) finalCategoryId = predicted;
-        }
-
+        const finalCategoryId = categoryId;
         if (!finalCategoryId) return res.status(400).json({ message: 'categoryId required' });
         if (!date) return res.status(400).json({ message: 'date required (YYYY-MM-DD)' });
 
@@ -76,7 +69,8 @@ export async function createTransaction(req: any, res: any) {
         await transactionRepo.save(tx);
 
         const absAmount = Math.abs(amount);
-        if (absAmount >= 1000) {
+        // Lower threshold so users actually see notifications for larger spends
+        if (absAmount >= 500) {
             const nRepo = AppDataSource.getRepository(Notification);
             await nRepo.save(nRepo.create({
                 userId: req.user.id,
@@ -89,13 +83,15 @@ export async function createTransaction(req: any, res: any) {
 
         // --- Budget Check ---
         if (type === 'expense') {
-            const cat = await categoryRepo.findOneBy({ id: finalCategoryId });
+            const cat = await categoryRepo.findOneBy({ id: finalCategoryId, userId: req.user.id });
             if (cat && cat.budget && Number(cat.budget) > 0) {
                 // Check total expense for this month for this category
-                // We can approximate by querying transactions for this month
                 const now = new Date(date); // use transaction date
-                const startOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-                const endOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-31`;
+                const month = now.getMonth();
+                const year = now.getFullYear();
+                const startOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+                const lastDay = new Date(year, month + 1, 0).getDate();
+                const endOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
                 const sumRes = await transactionRepo.createQueryBuilder('t')
                     .select('SUM(t.amount)', 'total')
@@ -108,11 +104,8 @@ export async function createTransaction(req: any, res: any) {
 
                 const totalSpent = Number(sumRes?.total || 0);
 
-                if (totalSpent > Number(cat.budget)) {
+                if (totalSpent >= Number(cat.budget)) {
                     const nRepo = AppDataSource.getRepository(Notification);
-                    // Check if we already notified for this month to avoid spamming?
-                    // Ideally yes, but for now simple trigger is safer than missing it.
-                    // We can assume user wants to know every time they exceed further.
                     await nRepo.save(nRepo.create({
                         userId: req.user.id,
                         type: 'BUDGET_EXCEEDED',

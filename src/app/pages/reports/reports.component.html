@@ -1,0 +1,121 @@
+<div class="pageX">
+  <section class="heroR glassX">
+    <div>
+      <div class="chipR">📊 REPORTS</div>
+      <div class="hTitle">Charts & Insights</div>
+      <div class="hSub">All charts live here, Overview stays clean & fast.</div>
+    </div>
+
+    <div class="ctrlR">
+      <div class="segR">
+        <button class="segBtn" [class.active]="monthsBack()===3" (click)="onRange(3)">3m</button>
+        <button class="segBtn" [class.active]="monthsBack()===6" (click)="onRange(6)">6m</button>
+        <button class="segBtn" [class.active]="monthsBack()===12" (click)="onRange(12)">12m</button>
+      </div>
+
+      <input class="inputX monthR" type="month"
+             [ngModel]="selectedMonth()"
+             (ngModelChange)="onMonthChange($event)">
+    </div>
+  </section>
+
+  <section class="kpiR">
+    <div class="glassX cardX">
+      <div class="muted">Income</div>
+      <div class="kVal successText nowrap">{{ kpi()?.totals?.income | currency:'BDT' }}</div>
+    </div>
+    <div class="glassX cardX">
+      <div class="muted">Expense</div>
+      <div class="kVal dangerText nowrap">{{ kpi()?.totals?.expense | currency:'BDT' }}</div>
+    </div>
+    <div class="glassX cardX">
+      <div class="muted">Balance</div>
+      <div class="kVal nowrap">{{ kpi()?.balance | currency:'BDT' }}</div>
+    </div>
+    <div class="glassX cardX">
+      <div class="muted">Avg Tx</div>
+      <div class="kVal nowrap">{{ kpi()?.average | currency:'BDT' }}</div>
+    </div>
+  </section>
+
+  <section class="gridR">
+    <div class="glassX cardX chartCard">
+      <div class="headX">
+        <div>
+          <div class="titleX">Income vs Expense</div>
+          <div class="subX">Waterfall (months)</div>
+        </div>
+      </div>
+      <div class="chartBox">
+        <div echarts [options]="barOpt()" [autoResize]="true" class="ech"></div>
+      </div>
+    </div>
+
+    <div class="glassX cardX chartCard">
+      <div class="headX">
+        <div>
+          <div class="titleX">Expense Breakdown</div>
+          <div class="subX">Top categories</div>
+        </div>
+      </div>
+      <div class="chartBox">
+        <div echarts [options]="donutOpt()" [autoResize]="true" class="ech"></div>
+      </div>
+    </div>
+
+    <div class="glassX cardX chartCard full">
+      <div class="headX">
+        <div>
+          <div class="titleX">Spending Heatmap</div>
+          <div class="subX">Year view</div>
+        </div>
+        <div class="segR">
+          <button class="segBtn" [class.active]="heatmapView()==='year'" (click)="heatmapView.set('year')">Year</button>
+          <button class="segBtn" [class.active]="heatmapView()==='month'" (click)="heatmapView.set('month')">Month</button>
+        </div>
+      </div>
+      <div class="chartBox tall">
+        <div echarts [options]="heatmapOpt()" [autoResize]="true" class="ech"></div>
+      </div>
+    </div>
+
+    <div class="glassX cardX full">
+      <div class="headX">
+        <div>
+          <div class="titleX">Daily Income vs Expense</div>
+          <div class="subX">Selected month</div>
+        </div>
+      </div>
+      <div class="chartBox">
+        <div echarts [options]="dailyOpt()" [autoResize]="true" class="ech"></div>
+      </div>
+    </div>
+
+    <div class="glassX cardX full">
+      <div class="headX">
+        <div>
+          <div class="titleX">Spending Alerts</div>
+          <div class="subX">Unusual spikes</div>
+        </div>
+        <span class="pillR" [class.warn]="alerts().length">{{ alerts().length ? 'Alert' : 'OK' }}</span>
+      </div>
+
+      <div *ngIf="alerts().length; else ok" class="alertsR">
+        <div *ngFor="let a of alerts()" class="alertCard">
+          <div class="badge">Alert</div>
+          <div class="alertBody">
+            <div class="alertTitle">{{ catName(a.categoryId) }}</div>
+            <div class="muted">Unusual change detected</div>
+          </div>
+          <div class="alertValue" [class.danger]="a.diff > 0" [class.success]="a.diff <= 0">
+            {{ a.diff > 0 ? '+' : ''}}{{ a.diff | currency:'BDT' }}
+          </div>
+        </div>
+      </div>
+
+      <ng-template #ok>
+        <div class="okR">✅ No unusual spending detected.</div>
+      </ng-template>
+    </div>
+  </section>
+</div>

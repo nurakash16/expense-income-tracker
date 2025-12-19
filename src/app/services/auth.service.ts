@@ -5,18 +5,19 @@ import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  isLoggedIn = signal<boolean>(!!localStorage.getItem('token'));
+  isLoggedIn = signal<boolean>(!!(localStorage.getItem('token') || sessionStorage.getItem('token')));
 
   constructor(private http: HttpClient) { }
 
-  register(email: string, password: string) {
+  register(email: string, password: string, displayName?: string) {
     return this.http.post(`${environment.apiUrl}/auth/register`, {
       email,
       password,
+      displayName,
     });
   }
 
-  login(email: string, password: string) {
+  login(email: string, password: string, remember = true) {
     return this.http
       .post<{ token: string }>(`${environment.apiUrl}/auth/login`, {
         email,
@@ -24,7 +25,13 @@ export class AuthService {
       })
       .pipe(
         tap((res) => {
-          localStorage.setItem('token', res.token);
+          if (remember) {
+            localStorage.setItem('token', res.token);
+            sessionStorage.removeItem('token');
+          } else {
+            sessionStorage.setItem('token', res.token);
+            localStorage.removeItem('token');
+          }
           this.isLoggedIn.set(true);
         })
       );
@@ -32,6 +39,11 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
     this.isLoggedIn.set(false);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('token') || sessionStorage.getItem('token');
   }
 }

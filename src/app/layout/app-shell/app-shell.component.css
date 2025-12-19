@@ -1,0 +1,175 @@
+:host{
+  --shell-bg: #f6f7fb;
+  --shell-grad-1: rgba(99,102,241,.22);
+  --shell-grad-2: rgba(34,197,94,.16);
+  --shell-surface: rgba(255,255,255,.72);
+  --shell-border: rgba(255,255,255,.48);
+  --shell-ink: rgba(0,0,0,.82);
+  --shell-muted: rgba(0,0,0,.55);
+  --shell-hover: rgba(255,255,255,.55);
+  --shell-active-bg: rgba(17,24,39,.92);
+  --shell-icon-bg: rgba(255,255,255,.55);
+  --shell-icon-border: rgba(0,0,0,.06);
+  --shell-overlay: rgba(0,0,0,.25);
+}
+
+:host-context([data-bs-theme="dark"]){
+  --shell-bg: #0b1221;
+  --shell-grad-1: rgba(59,130,246,.18);
+  --shell-grad-2: rgba(16,185,129,.12);
+  --shell-surface: rgba(17,24,39,.78);
+  --shell-border: rgba(148,163,184,.18);
+  --shell-ink: rgba(229,231,235,.95);
+  --shell-muted: rgba(148,163,184,.8);
+  --shell-hover: rgba(148,163,184,.12);
+  --shell-active-bg: rgba(30,41,59,.92);
+  --shell-icon-bg: rgba(15,23,42,.7);
+  --shell-icon-border: rgba(148,163,184,.22);
+  --shell-overlay: rgba(2,6,23,.6);
+}
+
+.app{
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 520px at 10% 0%, var(--shell-grad-1), transparent 60%),
+    radial-gradient(1200px 520px at 90% 0%, var(--shell-grad-2), transparent 60%),
+    var(--shell-bg);
+}
+
+.glass{
+  background: var(--shell-surface);
+  border: 1px solid var(--shell-border);
+  box-shadow: 0 18px 45px rgba(0,0,0,.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 18px;
+}
+
+.topbar{
+  position: sticky;
+  top: 10px;
+  margin: 10px auto 0 auto;
+  max-width: 1400px;
+  padding: 12px 14px;
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  z-index: 20;
+}
+
+.left{ display:flex; align-items:center; gap: 10px; }
+.right{ display:flex; align-items:center; gap: 10px; }
+
+.iconBtn{
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--shell-icon-border);
+  background: var(--shell-icon-bg);
+  cursor:pointer;
+}
+
+.brand{ display:flex; align-items:center; gap: 10px; }
+.brandDot{
+  width: 14px; height: 14px; border-radius: 6px;
+  background: linear-gradient(135deg, rgba(99,102,241,1), rgba(34,197,94,1));
+}
+.brandTitle{ font-weight: 900; line-height:1; }
+.brandSub{ font-size: 12px; color: var(--shell-muted); font-weight: 700; margin-top: 2px; }
+
+.avatar{
+  width: 40px; height: 40px;
+  border-radius: 14px;
+  background: rgba(17,24,39,.92);
+  color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-weight: 900;
+}
+
+.body{
+  max-width: 1400px;
+  margin: 12px auto;
+  padding: 0 10px 90px 10px;
+  display:grid;
+  grid-template-columns: 260px 1fr;
+  gap: 12px;
+  align-items:start;
+}
+
+.sidebar{
+  padding: 10px;
+  position: sticky;
+  top: 86px;
+  height: calc(100vh - 120px);
+  overflow:auto;
+}
+
+.navItem{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  text-decoration:none;
+  color: var(--shell-ink);
+  font-weight: 800;
+}
+.navItem:hover{ background: var(--shell-hover); }
+.navItem.active{ background: var(--shell-active-bg); color:#fff; }
+.navIcon{ width: 26px; display:inline-flex; justify-content:center; }
+
+.content{ min-height: 60vh; }
+
+.overlay{ display:none; }
+
+.bottomNav{
+  position: fixed;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  padding: 10px;
+  display:none;
+  gap: 8px;
+  z-index: 30;
+}
+.bottomItem{
+  flex:1;
+  text-decoration:none;
+  color: var(--shell-ink);
+  border-radius: 14px;
+  padding: 8px 6px;
+  text-align:center;
+  font-weight: 800;
+}
+.bottomItem.active{ background: var(--shell-active-bg); color:#fff; }
+.bIcon{ font-size: 18px; line-height: 1; }
+.bLabel{ font-size: 11px; margin-top: 4px; }
+
+.mobileOnly{ display:none; }
+
+@media (max-width: 992px){
+  .body{ grid-template-columns: 1fr; }
+  .sidebar{
+    position: fixed;
+    left: 10px;
+    top: 70px;
+    bottom: 90px;
+    width: 82vw;
+    max-width: 320px;
+    transform: translateX(-120%);
+    transition: transform .18s ease;
+    z-index: 40;
+    height: auto;
+  }
+  .sidebar.open{ transform: translateX(0); }
+
+  .overlay{
+    display:block;
+    position: fixed;
+    inset: 0;
+    background: var(--shell-overlay);
+    z-index: 35;
+  }
+
+  .bottomNav{ display:flex; }
+  .mobileOnly{ display:inline-flex; align-items:center; justify-content:center; }
+}

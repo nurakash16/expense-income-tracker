@@ -13,6 +13,9 @@ export class User {
     @Column()
     passwordHash!: string;
 
+    @Column({ nullable: true })
+    displayName?: string;
+
     @OneToMany(() => Category, (category) => category.user)
     categories!: Category[];
 

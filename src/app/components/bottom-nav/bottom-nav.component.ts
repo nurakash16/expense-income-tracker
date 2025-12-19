@@ -7,9 +7,9 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <nav class="fixed-bottom bg-white border-top safe-area" style="z-index: 1040;">
+    <nav class="fixed-bottom bottom-nav safe-area" style="z-index: 1040;">
       <div class="container-fluid">
-        <div class="row text-center py-2 gx-0">
+        <div class="row nav-grid text-center py-2 gx-0">
           <div class="col">
             <a routerLink="/dashboard" routerLinkActive="active-nav" class="nav-link p-1 text-muted d-flex flex-column align-items-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-grid mb-1" viewBox="0 0 16 16">
@@ -26,17 +26,29 @@ import { CommonModule } from '@angular/common';
               <small>List</small>
             </a>
           </div>
+          <div class="col">
+            <a routerLink="/insights" routerLinkActive="active-nav" class="nav-link p-1 text-muted d-flex flex-column align-items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-graph-up-arrow mb-1" viewBox="0 0 16 16">
+                 <path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0Zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5Z"/>
+              </svg>
+              <small>Insights</small>
+            </a>
+          </div>
           <div class="col position-relative">
              <!-- FAB Placeholder -->
-             <div class="position-absolute top-0 start-50 translate-middle" style="margin-top: -15px;">
-                 <a routerLink="/transactions" [queryParams]="{action: 'new'}" class="btn btn-primary rounded-circle shadow d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+             <div class="position-absolute top-0 start-50 translate-middle" style="margin-top: -30px;">
+                 <button class="fab-btn d-flex align-items-center justify-content-center" (click)="toggleFab()" [class.open]="fabOpen" aria-label="Add">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
                       <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
                     </svg>
-                 </a>
+                 </button>
+             </div>
+             <div class="fab-menu" *ngIf="fabOpen">
+               <a routerLink="/transactions" [queryParams]="{action: 'new'}" (click)="closeFab()">Add Transaction</a>
+               <a routerLink="/categories" (click)="closeFab()">Add Category</a>
              </div>
           </div>
-           <div class="col">
+          <div class="col">
             <a routerLink="/categories" routerLinkActive="active-nav" class="nav-link p-1 text-muted d-flex flex-column align-items-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-tags mb-1" viewBox="0 0 16 16">
                  <path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586V2z"/>
@@ -55,14 +67,6 @@ import { CommonModule } from '@angular/common';
             </a>
           </div>
           <div class="col">
-            <a routerLink="/insights" routerLinkActive="active-nav" class="nav-link p-1 text-muted d-flex flex-column align-items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-graph-up-arrow mb-1" viewBox="0 0 16 16">
-                 <path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0Zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5Z"/>
-              </svg>
-              <small>Insights</small>
-            </a>
-          </div>
-          <div class="col">
             <a routerLink="/notifications" routerLinkActive="active-nav" class="nav-link p-1 text-muted d-flex flex-column align-items-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bell mb-1" viewBox="0 0 16 16">
                  <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/>
@@ -75,9 +79,110 @@ import { CommonModule } from '@angular/common';
     </nav>
   `,
   styles: [`
-    .nav-link { font-size: 0.75rem; color: #6c757d; }
-    .nav-link.active-nav { color: #0d6efd !important; font-weight: 600; }
+    :host{
+      --nav-muted: #6c757d;
+      --nav-active: #0d6efd;
+      --nav-surface: rgba(255,255,255,0.82);
+      --nav-border: rgba(15,23,42,0.12);
+      --nav-fab: linear-gradient(135deg, #38bdf8, #a855f7);
+    }
+    :host-context([data-bs-theme="dark"]){
+      --nav-muted: #94a3b8;
+      --nav-active: #38bdf8;
+      --nav-surface: rgba(15,23,42,0.86);
+      --nav-border: rgba(148,163,184,0.22);
+      --nav-fab: linear-gradient(135deg, #38bdf8, #22c55e);
+    }
+    .bottom-nav{
+      background: var(--nav-surface);
+      border-top: 1px solid var(--nav-border);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 -10px 24px rgba(15,23,42,0.18);
+      width: 100%;
+      left: 0;
+      right: 0;
+      position: fixed;
+      bottom: 0;
+    }
+    .bottom-nav .container-fluid{
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+    .nav-link { font-size: 0.7rem; color: var(--nav-muted); }
+    .nav-link.active-nav { color: var(--nav-active) !important; font-weight: 600; }
     .safe-area { padding-bottom: env(safe-area-inset-bottom); }
+    .fab-btn{
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: var(--nav-fab);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.4);
+      box-shadow: 0 18px 34px rgba(15,23,42,0.38);
+      transform: translateY(-10px);
+      transition: transform 0.2s ease;
+    }
+    .fab-btn.open{
+      transform: translateY(-10px) rotate(45deg);
+    }
+    .nav-grid{
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      align-items: end;
+      width: 100%;
+    }
+    .nav-grid .col{
+      min-width: 0;
+    }
+    .bottom-nav small{
+      font-size: 0.65rem;
+    }
+    @media (max-width: 360px){
+      .bottom-nav small{
+        display: none;
+      }
+      .bottom-nav svg{
+        margin-bottom: 0 !important;
+      }
+    }
+    .fab-menu{
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 64px;
+      display: grid;
+      gap: 6px;
+      background: var(--nav-surface);
+      border: 1px solid var(--nav-border);
+      border-radius: 12px;
+      padding: 8px;
+      min-width: 160px;
+      box-shadow: 0 10px 24px rgba(15,23,42,0.24);
+      backdrop-filter: blur(12px);
+    }
+    .fab-menu a{
+      text-decoration: none;
+      color: var(--nav-muted);
+      font-weight: 700;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(148,163,184,0.12);
+      text-align: center;
+    }
+    .fab-menu a:hover{
+      color: var(--nav-active);
+      background: rgba(59,130,246,0.15);
+    }
   `]
 })
-export class BottomNavComponent { }
+export class BottomNavComponent {
+  fabOpen = false;
+
+  toggleFab() {
+    this.fabOpen = !this.fabOpen;
+  }
+
+  closeFab() {
+    this.fabOpen = false;
+  }
+}

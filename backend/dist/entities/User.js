@@ -29,6 +29,10 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "passwordHash", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "displayName", void 0);
+__decorate([
     (0, typeorm_1.OneToMany)(() => Category_1.Category, (category) => category.user),
     __metadata("design:type", Array)
 ], User.prototype, "categories", void 0);

@@ -36,7 +36,8 @@ async function markRead(req, res) {
         return res.status(404).json({ message: 'Notification not found' });
     notif.readAt = new Date();
     await repo.save(notif);
-    res.json({ message: 'OK' });
+    const count = await repo.count({ where: { userId, readAt: null } });
+    res.json({ message: 'OK', count });
 }
 async function markAllRead(req, res) {
     const userId = req.user.id;
@@ -48,5 +49,6 @@ async function markAllRead(req, res) {
         .where("\"userId\" = :userId", { userId })
         .andWhere("\"readAt\" is null")
         .execute();
-    res.json({ message: 'OK' });
+    const count = await repo.count({ where: { userId, readAt: null } });
+    res.json({ message: 'OK', count });
 }

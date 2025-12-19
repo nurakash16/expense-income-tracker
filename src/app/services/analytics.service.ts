@@ -8,6 +8,7 @@ export class AnalyticsService {
   private heatmapCache = new Map<number, any>();
   private waterfallCache = new Map<string, any>();
   private rollupCache = new Map<string, any>();
+  private overviewCache = new Map<string, any>();
   kpis(params?: any) {
     return this.api.get<any>('/kpi', { params });
   }
@@ -24,5 +25,10 @@ export class AnalyticsService {
     const key = JSON.stringify(params || {});
     if (this.rollupCache.has(key)) return of(this.rollupCache.get(key));
     return this.api.get<any>('/analytics/rollups', { params });
+  }
+  overview(params?: { months?: number; end?: string }) {
+    const key = JSON.stringify(params || {});
+    if (this.overviewCache.has(key)) return of(this.overviewCache.get(key));
+    return this.api.get<any>('/analytics/overview', { params });
   }
 }

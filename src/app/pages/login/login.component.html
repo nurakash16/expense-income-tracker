@@ -1,7 +1,18 @@
-<div class="d-flex align-items-center justify-content-center bg-light" style="min-height: 100vh;">
-  <div class="card shadow-sm" style="width: 400px; max-width: 90%;">
-    <div class="card-body p-4">
-      <h3 class="text-center mb-4">{{ isRegister ? 'Register' : 'Login' }}</h3>
+<section class="login-shell">
+  <div class="login-card">
+    <div class="login-left">
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <div>
+          <div class="brand-title">FinTracker</div>
+          <div class="brand-sub">Income, expenses, and clarity.</div>
+        </div>
+      </div>
+
+      <h1>{{ isRegister ? 'Create your account' : 'Welcome back' }}</h1>
+      <p class="lede">
+        {{ isRegister ? 'Start tracking and get full visibility in minutes.' : 'Sign in to see your latest insights.' }}
+      </p>
 
       <div *ngIf="error" [class]="error.includes('successful') ? 'alert alert-success' : 'alert alert-danger'"
         class="p-2 small text-center mb-3">
@@ -15,10 +26,24 @@
             [class.is-invalid]="form.get('email')?.touched && form.get('email')?.invalid">
         </div>
 
+        <div class="mb-3" *ngIf="isRegister">
+          <label class="form-label">Full name</label>
+          <input type="text" class="form-control" formControlName="displayName" placeholder="Your name"
+            [class.is-invalid]="form.get('displayName')?.touched && form.get('displayName')?.invalid">
+        </div>
+
         <div class="mb-3">
           <label class="form-label">Password</label>
           <input type="password" class="form-control" formControlName="password" placeholder="******"
             [class.is-invalid]="form.get('password')?.touched && form.get('password')?.invalid">
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between mb-3" *ngIf="!isRegister">
+          <label class="remember">
+            <input type="checkbox" formControlName="remember">
+            <span>Keep me signed in</span>
+          </label>
+          <span class="helper">Personal device</span>
         </div>
 
         <button type="submit" class="btn btn-primary w-100" [disabled]="form.invalid">
@@ -31,12 +56,23 @@
           {{ isRegister ? 'Already have an account? Login' : 'Need an account? Register' }}
         </a>
       </div>
-
-      <div class="text-center mt-3 text-muted small">
-        <p class="mb-0">Demo Account:</p>
-        <div>Email: admin@example.com</div>
-        <div>Pass: admin123</div>
-      </div>
     </div>
+
+    <aside class="login-right">
+      <div class="stat">
+        <div class="stat-label">Demo Access</div>
+        <div class="stat-value">admin@example.com</div>
+        <div class="stat-sub">Pass: admin123</div>
+      </div>
+      <div class="pill-grid">
+        <div class="pill">Budgets</div>
+        <div class="pill">Reports</div>
+        <div class="pill">Alerts</div>
+        <div class="pill">CSV</div>
+      </div>
+      <div class="quote">
+        “Make money decisions with a clearer view every day.”
+      </div>
+    </aside>
   </div>
-</div>
+</section>

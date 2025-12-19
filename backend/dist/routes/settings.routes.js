@@ -6,4 +6,7 @@ const settings_controller_1 = require("../controllers/settings.controller");
 const router = (0, express_1.Router)();
 router.get('/', auth_middleware_1.authMiddleware, settings_controller_1.getSettings);
 router.patch('/', auth_middleware_1.authMiddleware, settings_controller_1.updateSettings);
+router.get('/account', auth_middleware_1.authMiddleware, settings_controller_1.getAccount);
+router.patch('/account', auth_middleware_1.authMiddleware, settings_controller_1.updateAccount);
+router.post('/change-password', auth_middleware_1.authMiddleware, settings_controller_1.changePassword);
 exports.default = router;

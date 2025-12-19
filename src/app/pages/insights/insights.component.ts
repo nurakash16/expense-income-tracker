@@ -11,145 +11,220 @@ import { ThemeService } from '../../services/theme.service';
     standalone: true,
     imports: [CommonModule, FormsModule, NgxEchartsModule],
     template: `
-<div class="mb-4 d-flex align-items-center justify-content-between">
-    <div>
-        <h2 class="fw-bold mb-1 text-dark">Insights</h2>
-        <div class="text-muted">Analyze your spending patterns.</div>
+<section class=\"ins-shell\">
+  <section class=\"ins-hero glass\">
+    <div class=\"hero-left\">
+      <div class=\"chip\">EXECUTIVE INSIGHTS</div>
+      <h1>Insights <span class=\"grad\">Cockpit</span></h1>
+      <p class=\"sub\">Analyze your spending patterns.</p>
     </div>
-    <div>
-        <input type="month" class="form-control" [ngModel]="month()"
-            (ngModelChange)="month.set($event); onMonthChange()">
+    <div class=\"hero-right\">
+      <label class=\"month\">
+        <span>Month</span>
+        <input type=\"month\" [ngModel]=\"month()\" (ngModelChange)=\"month.set($event); onMonthChange()\">
+      </label>
     </div>
-</div>
+  </section>
 
-<div *ngIf="isLoading()" class="text-center py-5">
-    <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-</div>
+  <div *ngIf=\"isLoading()\" class=\"state\">
+    <div class=\"spinner\"></div>
+    <div>Loading insights...</div>
+  </div>
 
-<div *ngIf="!isLoading() && data()" class="row g-4">
-    <!-- Chart Section -->
-    <div class="col-12">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body" style="min-height: 300px;">
-                <div echarts [options]="chartOption()" class="demo-chart" style="height: 300px;"></div>
-            </div>
+  <section class=\"kpi-grid\" *ngIf=\"!isLoading() && data()\">
+    <div class=\"kpi-card glass\">
+      <div class=\"kpi-label\">Total Spent</div>
+      <div class=\"kpi-value danger\">{{ data().current.expense | currency }}</div>
+      <div class=\"kpi-sub\">vs last month {{ data().delta.expense | currency }}</div>
+    </div>
+    <div class=\"kpi-card glass\">
+      <div class=\"kpi-label\">Total Income</div>
+      <div class=\"kpi-value success\">{{ data().current.income | currency }}</div>
+      <div class=\"kpi-sub\">vs last month {{ data().delta.income | currency }}</div>
+    </div>
+    <div class=\"kpi-card glass\">
+      <div class=\"kpi-label\">Net</div>
+      <div class=\"kpi-value\" [class.success]=\"(data().current.income - data().current.expense) >= 0\" [class.danger]=\"(data().current.income - data().current.expense) < 0\">
+        {{ (data().current.income - data().current.expense) | currency }}
+      </div>
+      <div class=\"kpi-sub\">Income minus expense</div>
+    </div>
+  </section>
+
+  <section class=\"grid\" *ngIf=\"!isLoading() && data()\">
+    <div class=\"glass card\">
+      <div class=\"card-head\">
+        <div>
+          <div class=\"card-title\">Expense Breakdown</div>
+          <div class=\"card-sub\">Top categories</div>
         </div>
+      </div>
+      <div class=\"chart\">
+        <div echarts [options]=\"chartOption()\" class=\"ech\"></div>
+      </div>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="col-md-6 col-lg-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h6 class="text-muted text-uppercase small fw-bold mb-3">Total Spent</h6>
-                <div class="d-flex align-items-baseline gap-2">
-                    <h3 class="mb-0 fw-bold text-dark">{{ data().current.expense | currency }}</h3>
-                    <span class="badge rounded-pill" [class.bg-danger-subtle]="data().delta.expense > 0"
-                        [class.text-danger-emphasis]="data().delta.expense > 0"
-                        [class.bg-success-subtle]="data().delta.expense <= 0"
-                        [class.text-success-emphasis]="data().delta.expense <= 0">
-                        {{ data().delta.expense > 0 ? '+' : '' }}{{ data().delta.expense | currency }}
-                    </span>
-                </div>
-                <div class="small text-muted mt-2">vs last month</div>
-            </div>
+    <div class=\"glass card\">
+      <div class=\"card-head\">
+        <div>
+          <div class=\"card-title\">Unusual Spending</div>
+          <div class=\"card-sub\">Watch for spikes</div>
         </div>
+      </div>
+      <div class=\"list\" *ngIf=\"hasUnusual(); else noUnusual\">
+        <ng-container *ngFor=\"let item of data().categoryDetails\">
+          <div class=\"list-row\" *ngIf=\"item.isUnusual\">
+            <div class=\"row-title\">{{ getCategoryName(item.categoryId) }}</div>
+            <div class=\"row-sub\">Usual: ~{{ item.previous | currency }}</div>
+            <div class=\"row-value danger\">{{ item.current | currency }}</div>
+          </div>
+        </ng-container>
+      </div>
+      <ng-template #noUnusual>
+        <div class=\"empty\">No unusual spending detected.</div>
+      </ng-template>
     </div>
 
-    <div class="col-md-6 col-lg-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h6 class="text-muted text-uppercase small fw-bold mb-3">Total Income</h6>
-                <div class="d-flex align-items-baseline gap-2">
-                    <h3 class="mb-0 fw-bold text-dark">{{ data().current.income | currency }}</h3>
-                    <span class="badge rounded-pill" [class.bg-success-subtle]="data().delta.income > 0"
-                        [class.text-success-emphasis]="data().delta.income > 0"
-                        [class.bg-secondary-subtle]="data().delta.income <= 0"
-                        [class.text-secondary-emphasis]="data().delta.income <= 0">
-                        {{ data().delta.income > 0 ? '+' : '' }}{{ data().delta.income | currency }}
-                    </span>
-                </div>
-                <div class="small text-muted mt-2">vs last month</div>
-            </div>
+    <div class=\"glass card full\">
+      <div class=\"card-head\">
+        <div>
+          <div class=\"card-title\">Detailed Breakdown</div>
+          <div class=\"card-sub\">Top 5 categories</div>
         </div>
+      </div>
+      <div class=\"table-wrap\">
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th class=\"right\">Spent</th>
+              <th class=\"right\">Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor=\"let item of data().categoryDetails.slice(0,5)\">
+              <td>{{ getCategoryName(item.categoryId) }}</td>
+              <td class=\"right\">{{ item.current | currency }}</td>
+              <td class=\"right\">
+                <span [class.danger]=\"item.diff > 0\" [class.success]=\"item.diff < 0\">{{ item.diff | currency }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-</div>
+  </section>
+</section>
+`,
+    styles: [`
 
-<div *ngIf="!isLoading() && data()" class="row g-4 mt-2">
-    <!-- Unusual Spending Alert -->
-    <div class="col-lg-6">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-bottom py-3">
-                <h6 class="m-0 fw-bold text-dark">⚠️ Unusual Spending</h6>
-            </div>
-            <div class="card-body p-0">
-                <ul class="list-group list-group-flush">
-                    <ng-container *ngFor="let item of data().categoryDetails">
-                        <li *ngIf="item.isUnusual" class="list-group-item p-3 border-bottom-0">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="fw-bold text-dark">{{ getCategoryName(item.categoryId) }}</div>
-                                    <div class="small text-muted">
-                                        Usual: ~{{ item.previous | currency }}
-                                    </div>
-                                </div>
-                                <div class="text-end">
-                                    <div class="fw-bold text-danger">{{ item.current | currency }}</div>
-                                    <span class="badge bg-danger-subtle text-danger-emphasis rounded-pill">
-                                        +{{ item.pct | number:'1.0-1' }}%
-                                    </span>
-                                </div>
-                            </div>
-                        </li>
-                    </ng-container>
-                    <div *ngIf="!hasUnusual()"
-                        class="p-4 text-center text-muted">
-                        <span class="fs-4 d-block mb-2">✅</span>
-                        No unusual spending detected this month.
-                    </div>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    <!-- Top Movers -->
-    <div class="col-lg-6">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-bottom py-3">
-                <h6 class="m-0 fw-bold text-dark">Detailed Breakdown</h6>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="ps-3 border-0">Category</th>
-                                <th class="text-end border-0">Spent</th>
-                                <th class="text-end pe-3 border-0">Change</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let item of data().categoryDetails.slice(0, 5)">
-                                <td class="ps-3 fw-semibold text-dark">{{ getCategoryName(item.categoryId) }}</td>
-                                <td class="text-end">{{ item.current | currency }}</td>
-                                <td class="text-end pe-3">
-                                    <span class="badge rounded-pill" [class.bg-danger-subtle]="item.diff > 0"
-                                        [class.text-danger-emphasis]="item.diff > 0"
-                                        [class.bg-success-subtle]="item.diff < 0"
-                                        [class.text-success-emphasis]="item.diff < 0">
-                                        {{ item.diff > 0 ? '+' : '' }}{{ item.diff | currency }}
-                                    </span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-    `,
+:host{
+  --ins-ink: #0f172a;
+  --ins-muted: #64748b;
+  --ins-surface: rgba(255,255,255,0.82);
+  --ins-border: rgba(15,23,42,0.08);
+  --ins-soft: rgba(15,23,42,0.08);
+  --ins-shadow: 0 16px 40px rgba(15,23,42,0.1);
+  display:block;
+  color: var(--ins-ink);
+}
+:host-context([data-bs-theme="dark"]){
+  --ins-ink: #e5e7eb;
+  --ins-muted: #94a3b8;
+  --ins-surface: rgba(15,23,42,0.88);
+  --ins-border: rgba(148,163,184,0.2);
+  --ins-soft: rgba(148,163,184,0.12);
+  --ins-shadow: 0 16px 40px rgba(0,0,0,0.45);
+}
+.ins-shell{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+.glass{
+  background: var(--ins-surface);
+  border: 1px solid var(--ins-border);
+  border-radius: 18px;
+  box-shadow: var(--ins-shadow);
+  backdrop-filter: blur(14px);
+}
+.ins-hero{
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.hero-left h1{
+  margin: 8px 0 6px;
+  font-size: clamp(22px, 4vw, 34px);
+  font-weight: 900;
+}
+.grad{
+  background: linear-gradient(135deg, #6366f1, #22c55e, #ec4899);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.sub{ color: var(--ins-muted); font-weight: 700; }
+.chip{
+  display:inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--ins-soft);
+  border: 1px solid var(--ins-border);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+  color: var(--ins-muted);
+}
+.hero-row{ display:flex; align-items:center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.month{ display:flex; flex-direction: column; gap: 6px; font-weight: 800; color: var(--ins-muted); }
+.month input{ padding: 8px 10px; border-radius: 12px; border: 1px solid var(--ins-border); background: rgba(255,255,255,0.9); font-weight: 800; }
+:host-context([data-bs-theme="dark"]) .month input{ background: rgba(15,23,42,0.8); color: var(--ins-ink); }
+.meta{ display:flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.meta-item{ padding: 8px 10px; border-radius: 12px; background: var(--ins-soft); border: 1px solid var(--ins-border); }
+.label{ font-size: 12px; font-weight: 800; color: var(--ins-muted); }
+.value{ font-weight: 900; }
+.state{ display:flex; gap: 10px; align-items:center; padding: 14px; border-radius: 14px; background: var(--ins-soft); border: 1px dashed var(--ins-border); }
+.spinner{ width: 18px; height: 18px; border: 3px solid rgba(148,163,184,0.3); border-top-color: var(--ins-ink); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin{ to{ transform: rotate(360deg); } }
+.kpi-grid{ display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 12px; }
+.kpi-card{ padding: 12px; }
+.kpi-label{ font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ins-muted); }
+.kpi-value{ margin-top: 6px; font-size: 20px; font-weight: 900; }
+.kpi-sub{ margin-top: 4px; color: var(--ins-muted); font-weight: 700; font-size: 12px; }
+.kpi-value.success{ color: #16a34a; }
+.kpi-value.danger{ color: #dc2626; }
+.grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 12px; }
+.card{ padding: 14px; }
+.card-head{ display:flex; align-items:flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.card-title{ font-weight: 900; }
+.card-sub{ color: var(--ins-muted); font-weight: 700; font-size: 12px; }
+.chart{ min-height: 320px; }
+.ech{ width: 100%; height: 100%; min-height: 320px; }
+.list{ display:flex; flex-direction: column; gap: 10px; }
+.list-row{ padding: 10px; border-radius: 12px; background: var(--ins-soft); border: 1px solid var(--ins-border); }
+.row-title{ font-weight: 900; }
+.row-sub{ color: var(--ins-muted); font-weight: 700; font-size: 12px; }
+.row-value{ font-weight: 900; margin-top: 6px; }
+.row-value.danger{ color: #dc2626; }
+.empty{ padding: 12px; border-radius: 12px; background: var(--ins-soft); border: 1px dashed var(--ins-border); color: var(--ins-muted); }
+.table-wrap{ overflow-x: auto; }
+.table-wrap table{ width: 100%; border-collapse: collapse; }
+.table-wrap th, .table-wrap td{ padding: 10px; border-bottom: 1px solid var(--ins-border); }
+.table-wrap th{ font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ins-muted); text-align: left; }
+.table-wrap .right{ text-align: right; }
+.danger{ color: #dc2626; font-weight: 900; }
+.success{ color: #16a34a; font-weight: 900; }
+.full{ grid-column: 1 / -1; }
+@media (max-width: 768px){
+  .kpi-grid{ grid-template-columns: 1fr; }
+}
+@media (max-width: 600px){
+  .ins-shell{ padding: 12px; padding-bottom: 140px; }
+  .month input{ width: 100%; }
+  .chart{ min-height: 360px; }
+  .ech{ min-height: 360px; }
+}
+`]
 })
 export class InsightsComponent implements OnInit {
     private api = inject(ApiClientService);
@@ -249,6 +324,13 @@ export class InsightsComponent implements OnInit {
 
     onMonthChange() {
         this.loadData();
+    }
+
+    monthLabel(): string {
+        const current = this.month();
+        if (!current) return '';
+        const date = new Date(current + '-01');
+        return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     }
 
     getCategoryName(id: string): string {

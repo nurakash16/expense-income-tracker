@@ -41,7 +41,8 @@ export async function markRead(req: any, res: any) {
     notif.readAt = new Date();
     await repo.save(notif);
 
-    res.json({ message: 'OK' });
+    const count = await repo.count({ where: { userId, readAt: null } });
+    res.json({ message: 'OK', count });
 }
 
 export async function markAllRead(req: any, res: any) {
@@ -56,5 +57,6 @@ export async function markAllRead(req: any, res: any) {
         .andWhere("\"readAt\" is null")
         .execute();
 
-    res.json({ message: 'OK' });
+    const count = await repo.count({ where: { userId, readAt: null } });
+    res.json({ message: 'OK', count });
 }

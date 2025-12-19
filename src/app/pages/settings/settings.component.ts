@@ -1,96 +1,90 @@
-import { Component, inject, signal, effect } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
-import { SettingsService, UserSettings } from '../../services/settings.service';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { SettingsService } from '../../services/settings.service';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
-    standalone: true,
-    imports: [
-        CommonModule,
-        MatCardModule,
-        MatButtonModule,
-        MatIconModule,
-        MatSlideToggleModule,
-        MatFormFieldModule,
-        MatSelectModule,
-        FormsModule,
-        MatSnackBarModule
-    ],
-    templateUrl: './settings.component.html',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './settings.component.html',
+  styleUrls: ['./settings.component.css'],
 })
 export class SettingsComponent {
-    settingsService = inject(SettingsService);
-    snack = inject(MatSnackBar);
+  private settingsSvc = inject(SettingsService);
+  public themeSvc = inject(ThemeService);
 
-    // Form model
-    model = signal<UserSettings>({
-        theme: 'system',
-        currency: 'BDT',
-        accentColor: '#6200ee',
-        notificationPrefs: { unusualSpending: true, budgetAlerts: true, largeTransactions: true },
-        userId: '',
-        id: ''
+  displayName = signal<string>('');
+  email = signal<string>('');
+  currency = signal<string>('BDT');
+
+  currentPassword = signal<string>('');
+  newPassword = signal<string>('');
+  confirmPassword = signal<string>('');
+
+  status = signal<string>('');
+  error = signal<string>('');
+
+  constructor() {
+    effect(() => {
+      const acc = this.settingsSvc.account();
+      if (acc) {
+        this.displayName.set(acc.displayName || '');
+        this.email.set(acc.email || '');
+      }
     });
 
-    constructor() {
-        effect(() => {
-            const s = this.settingsService.settings();
-            if (s) {
-                this.model.set(JSON.parse(JSON.stringify(s))); // Deep copy
-            }
-        });
-    }
+    effect(() => {
+      const s = this.settingsSvc.settings();
+      if (s) {
+        if (s.currency) this.currency.set(s.currency);
+        if (s.theme === 'dark' || s.theme === 'light') {
+          this.themeSvc.theme.set(s.theme);
+        }
+      }
+    });
+  }
 
-    // Data management
-    exportData() {
-        // Collect data from services (naively for now, or just export settings/metadata)
-        // Ideally we'd fetch all transactions. For now let's export Settings + basic info.
-        const data = {
-            settings: this.model(),
-            timestamp: new Date().toISOString()
-        };
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `backup-${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-    }
+  saveProfile() {
+    this.clearMessages();
+    this.settingsSvc.updateAccount(this.displayName()).subscribe({
+      next: () => this.status.set('Profile updated'),
+      error: (err) => this.error.set(err?.error?.message || 'Failed to update profile'),
+    });
+  }
 
-    importData(event: any) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-            try {
-                const data = JSON.parse(e.target.result);
-                if (data.settings) {
-                    this.model.set(data.settings);
-                    this.save(); // Persist imported settings
-                    this.snack.open('Settings restored successfully', 'OK', { duration: 3000 });
-                }
-            } catch (err) {
-                this.snack.open('Invalid backup file', 'Error', { duration: 3000 });
-            }
-        };
-        reader.readAsText(file);
-    }
+  savePreferences() {
+    this.clearMessages();
+    const theme = this.themeSvc.theme();
+    this.settingsSvc.update({ theme, currency: this.currency() }).subscribe({
+      next: () => this.status.set('Preferences saved'),
+      error: (err) => this.error.set(err?.error?.message || 'Failed to save preferences'),
+    });
+  }
 
-    save() {
-        this.settingsService.update(this.model()).subscribe(() => {
-            this.snack.open('Settings saved', 'OK', { duration: 2000 });
-            localStorage.setItem('theme', this.model().theme);
-            // Reload to apply theme if needed, or preferably just use a ThemeService signal
-            if (this.model().theme !== localStorage.getItem('theme')) {
-                window.location.reload();
-            }
-        });
+  applyTheme(theme: 'light' | 'dark') {
+    this.themeSvc.theme.set(theme);
+  }
+
+  changePassword() {
+    this.clearMessages();
+    if (this.newPassword() !== this.confirmPassword()) {
+      this.error.set('Passwords do not match');
+      return;
     }
+    this.settingsSvc.changePassword(this.currentPassword(), this.newPassword()).subscribe({
+      next: (res) => {
+        this.status.set(res.message || 'Password changed');
+        this.currentPassword.set('');
+        this.newPassword.set('');
+        this.confirmPassword.set('');
+      },
+      error: (err) => this.error.set(err?.error?.message || 'Failed to change password'),
+    });
+  }
+
+  private clearMessages() {
+    this.status.set('');
+    this.error.set('');
+  }
 }

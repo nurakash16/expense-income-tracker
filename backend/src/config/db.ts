@@ -5,14 +5,15 @@ import { Category } from '../entities/Category';
 import { Transaction } from '../entities/Transaction';
 import { WeeklyRollup } from '../entities/WeeklyRollup';
 import { Notification } from '../entities/Notification';
-import { CategoryRule } from '../entities/CategoryRule';
 import { MonthlyRollup } from '../entities/MonthlyRollup';
 import { MonthlySalary } from '../entities/MonthlySalary';
 import { UserSettings } from '../entities/UserSettings';
+import { InitCoreTables1699999999999 } from '../migrations/1699999999999-InitCoreTables';
 import { NotificationsAndRules1700000000000 } from '../migrations/1700000000000-NotificationsAndRules';
 import { MonthlyRollups1700000000001 } from '../migrations/1700000000001-MonthlyRollups';
 import { AddBudgetToCategory1700000000002 } from '../migrations/1700000000002-AddBudgetToCategory';
 import { AddSalaryAndSettings1700000000003 } from '../migrations/1700000000003-AddSalaryAndSettings';
+import { AddDisplayNameToUsers1700000000004 } from '../migrations/1700000000004-AddDisplayNameToUsers';
 
 export const AppDataSource = new DataSource({
     type: 'postgres',
@@ -23,12 +24,14 @@ export const AppDataSource = new DataSource({
     database: process.env['DB_NAME'],
     synchronize: false,
     logging: false,
-    entities: [User, Category, Transaction, WeeklyRollup, Notification, CategoryRule, MonthlyRollup, MonthlySalary, UserSettings],
+    entities: [User, Category, Transaction, WeeklyRollup, Notification, MonthlyRollup, MonthlySalary, UserSettings],
     migrations: [
+        InitCoreTables1699999999999,
         NotificationsAndRules1700000000000,
         MonthlyRollups1700000000001,
         AddBudgetToCategory1700000000002,
-        AddSalaryAndSettings1700000000003
+        AddSalaryAndSettings1700000000003,
+        AddDisplayNameToUsers1700000000004
     ],
 
     ssl: (!process.env['DB_HOST'] || process.env['DB_HOST'] === 'localhost' || process.env['DB_HOST'] === '127.0.0.1')
@@ -65,4 +68,3 @@ export async function connectDB() {
         throw error;
     }
 }
-

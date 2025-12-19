@@ -9,14 +9,15 @@ const Category_1 = require("../entities/Category");
 const Transaction_1 = require("../entities/Transaction");
 const WeeklyRollup_1 = require("../entities/WeeklyRollup");
 const Notification_1 = require("../entities/Notification");
-const CategoryRule_1 = require("../entities/CategoryRule");
 const MonthlyRollup_1 = require("../entities/MonthlyRollup");
 const MonthlySalary_1 = require("../entities/MonthlySalary");
 const UserSettings_1 = require("../entities/UserSettings");
+const _1699999999999_InitCoreTables_1 = require("../migrations/1699999999999-InitCoreTables");
 const _1700000000000_NotificationsAndRules_1 = require("../migrations/1700000000000-NotificationsAndRules");
 const _1700000000001_MonthlyRollups_1 = require("../migrations/1700000000001-MonthlyRollups");
 const _1700000000002_AddBudgetToCategory_1 = require("../migrations/1700000000002-AddBudgetToCategory");
 const _1700000000003_AddSalaryAndSettings_1 = require("../migrations/1700000000003-AddSalaryAndSettings");
+const _1700000000004_AddDisplayNameToUsers_1 = require("../migrations/1700000000004-AddDisplayNameToUsers");
 exports.AppDataSource = new typeorm_1.DataSource({
     type: 'postgres',
     host: process.env['DB_HOST'],
@@ -26,12 +27,14 @@ exports.AppDataSource = new typeorm_1.DataSource({
     database: process.env['DB_NAME'],
     synchronize: false,
     logging: false,
-    entities: [User_1.User, Category_1.Category, Transaction_1.Transaction, WeeklyRollup_1.WeeklyRollup, Notification_1.Notification, CategoryRule_1.CategoryRule, MonthlyRollup_1.MonthlyRollup, MonthlySalary_1.MonthlySalary, UserSettings_1.UserSettings],
+    entities: [User_1.User, Category_1.Category, Transaction_1.Transaction, WeeklyRollup_1.WeeklyRollup, Notification_1.Notification, MonthlyRollup_1.MonthlyRollup, MonthlySalary_1.MonthlySalary, UserSettings_1.UserSettings],
     migrations: [
+        _1699999999999_InitCoreTables_1.InitCoreTables1699999999999,
         _1700000000000_NotificationsAndRules_1.NotificationsAndRules1700000000000,
         _1700000000001_MonthlyRollups_1.MonthlyRollups1700000000001,
         _1700000000002_AddBudgetToCategory_1.AddBudgetToCategory1700000000002,
-        _1700000000003_AddSalaryAndSettings_1.AddSalaryAndSettings1700000000003
+        _1700000000003_AddSalaryAndSettings_1.AddSalaryAndSettings1700000000003,
+        _1700000000004_AddDisplayNameToUsers_1.AddDisplayNameToUsers1700000000004
     ],
     ssl: (!process.env['DB_HOST'] || process.env['DB_HOST'] === 'localhost' || process.env['DB_HOST'] === '127.0.0.1')
         ? false

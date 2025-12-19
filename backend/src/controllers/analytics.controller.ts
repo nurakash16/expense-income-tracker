@@ -1,6 +1,7 @@
 import { AppDataSource } from '../config/db';
 import { Transaction } from '../entities/Transaction';
 import { WeeklyRollup } from '../entities/WeeklyRollup';
+import { Category } from '../entities/Category';
 
 export async function getHeatmap(req: any, res: any) {
   try {
@@ -85,6 +86,19 @@ export async function getRollups(req: any, res: any) {
 // New Insights Endpoints reading from MonthlyRollup
 import { MonthlyRollup } from '../entities/MonthlyRollup';
 
+function monthRange(monthsBack: number, endMonth?: string) {
+  const end = endMonth ? new Date(`${endMonth}-01`) : new Date();
+  const start = new Date(end.getFullYear(), end.getMonth() - (monthsBack - 1), 1);
+  const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  const months: string[] = [];
+  let cursor = new Date(start);
+  while (cursor <= end) {
+    months.push(fmt(cursor));
+    cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
+  }
+  return { start: `${fmt(start)}-01`, end: `${fmt(end)}-31`, months };
+}
+
 export async function getMonthlyInsights(req: any, res: any) {
   try {
     const repo = AppDataSource.getRepository(MonthlyRollup);
@@ -149,5 +163,167 @@ export async function getMonthlyInsights(req: any, res: any) {
   } catch (e) {
     console.error('insights error', e);
     res.status(500).json({ message: 'Error fetching insights' });
+  }
+}
+
+// Rich overview for dashboard (trends, breakdowns, alerts)
+export async function getAnalyticsOverview(req: any, res: any) {
+  try {
+    const repo = AppDataSource.getRepository(Transaction);
+    const userId = req.user.id;
+    const months = Number(req.query.months || 6);
+    const endMonth = req.query.end as string | undefined; // YYYY-MM
+
+    const { start, end, months: monthBuckets } = monthRange(months, endMonth);
+
+    // Totals and savings rate
+    const totalsRow = await repo.createQueryBuilder('t')
+      .select("SUM(CASE WHEN t.type='income' THEN t.amount ELSE 0 END)", 'income')
+      .addSelect("SUM(CASE WHEN t.type='expense' THEN t.amount ELSE 0 END)", 'expense')
+      .where('t.userId = :userId', { userId })
+      .andWhere('t.date BETWEEN :start AND :end', { start, end })
+      .getRawOne();
+
+    const incomeTotal = Number(totalsRow?.income || 0);
+    const expenseTotal = Number(totalsRow?.expense || 0);
+    const net = incomeTotal - expenseTotal;
+    const savingsRate = incomeTotal > 0 ? ((incomeTotal - expenseTotal) / incomeTotal) * 100 : 0;
+
+    // Monthly trend
+    const trendRows = await repo.createQueryBuilder('t')
+      .select("SUBSTRING(t.date FROM 1 FOR 7)", 'month')
+      .addSelect("SUM(CASE WHEN t.type='income' THEN t.amount ELSE 0 END)", 'income')
+      .addSelect("SUM(CASE WHEN t.type='expense' THEN t.amount ELSE 0 END)", 'expense')
+      .where('t.userId = :userId', { userId })
+      .andWhere('t.date BETWEEN :start AND :end', { start, end })
+      .groupBy('month')
+      .orderBy('month', 'ASC')
+      .getRawMany();
+    const trendMap = new Map<string, { income: number; expense: number }>();
+    trendRows.forEach((r: any) => trendMap.set(r.month, { income: Number(r.income), expense: Number(r.expense) }));
+    const trend = {
+      months: monthBuckets,
+      income: monthBuckets.map(m => trendMap.get(m)?.income || 0),
+      expense: monthBuckets.map(m => trendMap.get(m)?.expense || 0),
+      net: monthBuckets.map(m => (trendMap.get(m)?.income || 0) - (trendMap.get(m)?.expense || 0))
+    };
+
+    // Expense breakdown (last 90 days)
+    const expenseBreakdown = await repo.createQueryBuilder('t')
+      .leftJoin(Category, 'c', 'c.id = t.categoryId')
+      .select('COALESCE(c.name, \'Uncategorized\')', 'name')
+      .addSelect('t.categoryId', 'categoryId')
+      .addSelect("SUM(CASE WHEN t.type='expense' THEN t.amount ELSE 0 END)", 'value')
+      .where('t.userId = :userId', { userId })
+      .andWhere("t.type = 'expense'")
+      .andWhere('t.date >= :start', { start: monthRange(3).start }) // last 3 months
+      .groupBy('t.categoryId')
+      .addGroupBy('c.name')
+      .orderBy('value', 'DESC')
+      .limit(8)
+      .getRawMany();
+
+    // Income breakdown (last 90 days)
+    const incomeBreakdown = await repo.createQueryBuilder('t')
+      .leftJoin(Category, 'c', 'c.id = t.categoryId')
+      .select('COALESCE(c.name, \'Uncategorized\')', 'name')
+      .addSelect('t.categoryId', 'categoryId')
+      .addSelect("SUM(CASE WHEN t.type='income' THEN t.amount ELSE 0 END)", 'value')
+      .where('t.userId = :userId', { userId })
+      .andWhere("t.type = 'income'")
+      .andWhere('t.date >= :start', { start: monthRange(3).start })
+      .groupBy('t.categoryId')
+      .addGroupBy('c.name')
+      .orderBy('value', 'DESC')
+      .limit(8)
+      .getRawMany();
+
+    // Payment method share (last 90 days, expenses only)
+    const paymentMethods = await repo.createQueryBuilder('t')
+      .select('COALESCE(t.paymentMethod, \'other\')', 'name')
+      .addSelect("SUM(CASE WHEN t.type='expense' THEN t.amount ELSE 0 END)", 'value')
+      .where('t.userId = :userId', { userId })
+      .andWhere("t.type = 'expense'")
+      .andWhere('t.date >= :start', { start: monthRange(3).start })
+      .groupBy('t.paymentMethod')
+      .orderBy('value', 'DESC')
+      .getRawMany();
+
+    // Top transactions (last 30 days)
+    const topTransactions = await repo.createQueryBuilder('t')
+      .leftJoin(Category, 'c', 'c.id = t.categoryId')
+      .select(['t.id', 't.amount', 't.type', 't.date', 't.note', 'c.name'])
+      .where('t.userId = :userId', { userId })
+      .andWhere('t.date >= :start', { start: monthRange(1).start })
+      .orderBy('t.amount', 'DESC')
+      .limit(5)
+      .getRawMany();
+
+    // Alerts: category spikes (last month vs previous 3 months)
+    const endDate = endMonth ? new Date(`${endMonth}-01`) : new Date();
+    const lastMonthDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, 1);
+    const lastMonth = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`;
+    const lastMonthStart = `${lastMonth}-01`;
+    const lastMonthEnd = `${lastMonth}-31`;
+    const trailingStartDate = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth() - 3, 1);
+    const trailingStart = `${trailingStartDate.getFullYear()}-${String(trailingStartDate.getMonth() + 1).padStart(2, '0')}-01`;
+    const trailingEnd = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}-31`;
+
+    const lastMonthTotals = await repo.createQueryBuilder('t')
+      .select('t.categoryId', 'categoryId')
+      .addSelect("SUM(CASE WHEN t.type='expense' THEN t.amount ELSE 0 END)", 'value')
+      .where('t.userId = :userId', { userId })
+      .andWhere("t.type = 'expense'")
+      .andWhere('t.date BETWEEN :start AND :end', { start: lastMonthStart, end: lastMonthEnd })
+      .groupBy('t.categoryId')
+      .getRawMany();
+
+    const trailingTotals = await repo.createQueryBuilder('t')
+      .select('t.categoryId', 'categoryId')
+      .addSelect("SUM(CASE WHEN t.type='expense' THEN t.amount ELSE 0 END)", 'value')
+      .where('t.userId = :userId', { userId })
+      .andWhere("t.type = 'expense'")
+      .andWhere('t.date BETWEEN :start AND :end', { start: trailingStart, end: trailingEnd })
+      .groupBy('t.categoryId')
+      .getRawMany();
+
+    const trailingMap = new Map<string, number>();
+    trailingTotals.forEach((r: any) => trailingMap.set(r.categoryId, Number(r.value)));
+    const alerts = lastMonthTotals
+      .map((r: any) => {
+        const current = Number(r.value);
+        const trailing = trailingMap.get(r.categoryId) || 0;
+        const avg = trailing / 3; // avg of previous 3 months
+        const spike = avg > 0 ? (current - avg) / avg : current > 0 ? 1 : 0;
+        return {
+          categoryId: r.categoryId,
+          current,
+          spikePct: spike * 100
+        };
+      })
+      .filter((r: any) => r.current > 50 && r.spikePct > 30)
+      .sort((a: any, b: any) => b.spikePct - a.spikePct)
+      .slice(0, 5);
+
+    res.json({
+      period: { start, end },
+      totals: { income: incomeTotal, expense: expenseTotal, net, savingsRate },
+      trend,
+      expenseBreakdown: expenseBreakdown.map((r: any) => ({ name: r.name, value: Number(r.value), categoryId: r.categoryId })),
+      incomeBreakdown: incomeBreakdown.map((r: any) => ({ name: r.name, value: Number(r.value), categoryId: r.categoryId })),
+      paymentMethods: paymentMethods.map((r: any) => ({ name: r.name || 'Other', value: Number(r.value) })),
+      topTransactions: topTransactions.map((t: any) => ({
+        id: t.t_id || t.id,
+        amount: Number(t.t_amount || t.amount),
+        type: t.t_type || t.type,
+        date: t.t_date || t.date,
+        categoryName: t.c_name || t.name || 'Uncategorized',
+        note: t.t_note || t.note || ''
+      })),
+      alerts
+    });
+  } catch (e) {
+    console.error('overview error', e);
+    res.status(500).json({ message: 'Error building analytics overview' });
   }
 }

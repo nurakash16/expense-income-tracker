@@ -8,7 +8,8 @@
     "start": "node dist/server.js",
     "db:create": "ts-node src/scripts/create-db.ts",
     "db:create:prod": "node dist/scripts/create-db.js",
-    "migrate": "node dist/scripts/migrate.js"
+    "migrate": "node dist/scripts/migrate.js",
+    "seed:demo": "node dist/scripts/seed-demo-user.js"
   },
   "keywords": [],
   "author": "",

@@ -7,6 +7,7 @@ import { CategoryService } from '../../services/category.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-dashboard-charts',
@@ -20,8 +21,8 @@ import { MatIconModule } from '@angular/material/icon';
           <div class="p-3 border-bottom">
             <h6 class="m-0 fw-bold text-muted">Income vs Expense (Last 6 Months)</h6>
           </div>
-          <div class="p-3" style="height: 300px;">
-            <div echarts [options]="incomeExpenseChart()" class="w-100 h-100"></div>
+          <div class="p-3 chart-box">
+            <div echarts [options]="incomeExpenseChart()" [autoResize]="true" class="w-100 h-100"></div>
           </div>
         </mat-card>
       </div>
@@ -32,8 +33,8 @@ import { MatIconModule } from '@angular/material/icon';
           <div class="p-3 border-bottom">
             <h6 class="m-0 fw-bold text-muted">Expense Breakdown (Top Categories)</h6>
           </div>
-          <div class="p-3" style="height: 300px;">
-            <div echarts [options]="expenseDonutChart()" class="w-100 h-100"></div>
+          <div class="p-3 chart-box">
+            <div echarts [options]="expenseDonutChart()" [autoResize]="true" class="w-100 h-100"></div>
           </div>
         </mat-card>
       </div>
@@ -57,7 +58,7 @@ import { MatIconModule } from '@angular/material/icon';
                    <small class="opacity-75">({{ $any(item).pct | number:'1.0-0' }}%)</small>
                  </span>
                </div>
-               <mat-progress-bar mode="determinate" [value]="Math.abs($any(item).pct)" 
+               <mat-progress-bar mode="determinate" [value]="Math.abs($any(item).pct)"
                  [color]="$any(item).diff > 0 ? 'warn' : 'primary'" style="height: 6px; border-radius: 3px;">
                </mat-progress-bar>
              </div>
@@ -93,8 +94,8 @@ import { MatIconModule } from '@angular/material/icon';
            <div class="p-3 border-bottom">
             <h6 class="m-0 fw-bold text-muted">Net Cash Flow (Waterfall)</h6>
           </div>
-          <div class="p-3" style="height: 300px;">
-            <div echarts [options]="waterfallChart()" class="w-100 h-100"></div>
+          <div class="p-3 chart-box">
+            <div echarts [options]="waterfallChart()" [autoResize]="true" class="w-100 h-100"></div>
           </div>
         </mat-card>
       </div>
@@ -114,7 +115,7 @@ import { MatIconModule } from '@angular/material/icon';
                      {{ item.spend | currency:'BDT' }} / {{ item.budget | currency:'BDT' }}
                    </span>
                  </div>
-                 <mat-progress-bar mode="determinate" [value]="item.percent" 
+                 <mat-progress-bar mode="determinate" [value]="item.percent"
                    [class]="'custom-progress-' + getBudgetColorClass(item.percent)"
                    style="height: 8px; border-radius: 4px;">
                  </mat-progress-bar>
@@ -123,15 +124,15 @@ import { MatIconModule } from '@angular/material/icon';
           </div>
         </mat-card>
       </div>
-      
+
       <!-- Row 5: Heatmap (Category x Month) -->
       <div class="col-12">
         <mat-card class="glass-card">
           <div class="p-3 border-bottom">
             <h6 class="m-0 fw-bold text-muted">Spending Heatmap (Last 6 Months)</h6>
           </div>
-           <div class="p-3" style="height: 350px;">
-            <div echarts [options]="heatmapChart()" class="w-100 h-100"></div>
+           <div class="p-3 chart-box chart-box-tall">
+            <div echarts [options]="heatmapChart()" [autoResize]="true" class="w-100 h-100"></div>
           </div>
         </mat-card>
       </div>
@@ -141,11 +142,15 @@ import { MatIconModule } from '@angular/material/icon';
     ::ng-deep .custom-progress-success .mat-progress-bar-fill::after { background-color: var(--bs-success) !important; }
     ::ng-deep .custom-progress-warning .mat-progress-bar-fill::after { background-color: var(--bs-warning) !important; }
     ::ng-deep .custom-progress-danger .mat-progress-bar-fill::after { background-color: var(--bs-danger) !important; }
+
+    .chart-box{ height: clamp(220px, 35vh, 340px); }
+    .chart-box-tall{ height: clamp(280px, 45vh, 420px); }
   `]
 })
 export class DashboardChartsComponent {
   private api = inject(ApiClientService);
   private catService = inject(CategoryService);
+  private themeService = inject(ThemeService);
   Math = Math;
 
   private rollups = signal<any[]>([]);
@@ -169,57 +174,43 @@ export class DashboardChartsComponent {
 
   // Computed chart options
   incomeExpenseChart = computed((): EChartsOption => {
+    const isDark = this.themeService.theme() === 'dark';
+    const textColor = isDark ? '#e5e7eb' : '#374151';
+    const gridLine = isDark ? 'rgba(148,163,184,0.2)' : 'rgba(148,163,184,0.35)';
     const data = this.rollups();
     const months = [...new Set(data.map(d => d.month))].sort();
 
-    // Group rollup data by Month + Type if rollups are separated by Transaction Type,
-    // BUT 'MonthlyRollup' or 'analytics/rollups' usually returns entries per category/month or per week?
-    // Let's assume rollups are: { month: '2025-01', totalIncome: 500, totalExpense: 200 } aggregate?
-    // Step 900 shows 'getRollups' returns { weeks, income, expense, balance }. 
-    // Wait, the `getRollups` endpoint in Step 900 returns WEEKLY rollups (WeeklyRollup entity).
-    // And `this.rollups.set(res)` in constructor calls `/analytics/rollups`. 
-    // BUT the response from `getRollups` is `{ weeks: [], income: [], expense: [], balance: [] }`. 
-    // **CRITICAL FIX**: My front-end logic assumed `this.rollups()` is an array of objects `{ month, totalIncome... }`.
-    // It's actually `{ weeks: [], income: [], ... }`. 
-    // Need to fix data handling.
-    // However, I also see `getMonthlyInsights` returns monthly data.
-    // Let's map the `getRollups` (Weekly) to a Chart or use a new logic.
-    // Actually, `getRollups` endpoint logic (Step 900) maps WeeklyRollup.
-    // The previous implementation of `incomeExpenseChart` at Step 860 Line 145: `const data = this.rollups(); ... map(d => d.month)`
-    // This implies `this.rollups()` WAS expected to be an array of objects.
-    // Converting `this.api.get('/analytics/rollups')` result:
-    // Result is `{ weeks: [...], income: [...], ... }`
-    // So `this.rollups()` is an Object, not Array.
-    // FIX: I will use `waterfallData` (Monthly) for Income vs Expense chart too, or fix logic.
-    // Let's rely on `waterfallData` which gives `{ months, income, expense, net }` from `getWaterfall`.
-
-    // Fallback: If `waterfallData` is populated, use it.
     const wf = this.waterfallData();
     if (!wf) return {};
 
     return {
       tooltip: { trigger: 'axis' },
-      legend: { bottom: 0 },
+      legend: { bottom: 0, textStyle: { color: textColor } },
       grid: { left: '3%', right: '4%', bottom: '10%', containLabel: true },
-      xAxis: { type: 'category', data: wf.months },
-      yAxis: { type: 'value' },
+      xAxis: { type: 'category', data: wf.months, axisLabel: { color: textColor } },
+      yAxis: { type: 'value', axisLabel: { color: textColor }, splitLine: { lineStyle: { color: gridLine } } },
       series: [
         { name: 'Income', type: 'bar', data: wf.income, itemStyle: { borderRadius: [4, 4, 0, 0], color: '#4caf50' } },
         { name: 'Expense', type: 'bar', data: wf.expense, itemStyle: { borderRadius: [4, 4, 0, 0], color: '#f44336' } }
+      ],
+      media: [
+        {
+          query: { maxWidth: 520 },
+          option: {
+            grid: { left: '6%', right: '4%', bottom: '12%', containLabel: true },
+            legend: { top: 0, bottom: null }
+          }
+        }
       ]
     };
   });
 
   waterfallChart = computed((): EChartsOption => {
+    const isDark = this.themeService.theme() === 'dark';
+    const textColor = isDark ? '#e5e7eb' : '#374151';
+    const gridLine = isDark ? 'rgba(148,163,184,0.2)' : 'rgba(148,163,184,0.35)';
     const wf = this.waterfallData();
     if (!wf) return {};
-
-    // Waterfall Logic:
-    // Base (Invisible), Income (Green), Expense (Red), Net (Blue Line)
-    // Usually Waterfall shows: Start -> +Income -> -Expense -> End
-    // Simplified "Cash Flow" Waterfall: 
-    // Monthly Bars showing Net Flow? Or Income vs Expense bars?
-    // User asked for Waterfall. Let's do a Net Cash Flow bar chart with positive/negative colors.
 
     const net = wf.net.map((n: number) => ({
       value: n,
@@ -227,63 +218,25 @@ export class DashboardChartsComponent {
     }));
 
     return {
-      title: { subtext: 'Net Savings per Month', left: 'center' },
+      title: { subtext: 'Net Savings per Month', left: 'center', textStyle: { color: textColor }, subtextStyle: { color: textColor } },
       tooltip: { trigger: 'axis' },
       grid: { left: '3%', right: '4%', bottom: '10%', containLabel: true },
-      xAxis: { type: 'category', data: wf.months },
-      yAxis: { type: 'value' },
+      xAxis: { type: 'category', data: wf.months, axisLabel: { color: textColor } },
+      yAxis: { type: 'value', axisLabel: { color: textColor }, splitLine: { lineStyle: { color: gridLine } } },
       series: [
         {
           type: 'bar',
           data: net,
-          label: { show: true, position: 'top' }
+          label: { show: true, position: 'top', color: textColor }
         }
       ]
     };
   });
 
   expenseDonutChart = computed((): EChartsOption => {
-    // We need Category-level data.
-    // `waterfallData` only has totals.
-    // `insights` only has current month stats?
-    // We need aggregation over time.
-    // We need to fetch `/analytics/monthly` for multiple months or use a new endpoint `getHeatmap` which returns dates & values?
-    // Step 900 `getHeatmap` returns raw daily sums per category? No, it returns `SUM(...) group by date`.
-    // It filters by `userId` and year.
-    // It does NOT separate by category in the select? 
-    // Wait, Step 900 Line 5 `getHeatmap`: `.select('t.date').addSelect(SUM... value)`.
-    // It doesn't group by category! It merges all expenses into one value per day. 
-    // So `getHeatmap` is barely a heatmap of "Intensity" of spending, not "Category vs Month".
-
-    // The previous `heatmapChart` logic (Step 860 Line 200) assumed `this.rollups()` had `categoryId`.
-    // But `getRollups` (Step 900 Line 65) returns `WeeklyRollup` which usually sums everything?
-    // Let's check `WeeklyRollup` entity content if possible... probably doesn't have categoryId breakdown if it's a single table row per week per user.
-    // Actually, `WeeklyRollup` usually has just totals. 
-    // Start 900 Line 88 `getMonthlyInsights` reads `MonthlyRollup` which DOES have `categoryId` (Line 127).
-
-    // SOLUTION: We need to fetch `MonthlyRollup` for ALL categories for the last 6 months to build Heatmap and Donut correctly.
-    // The existing endpoints don't seem to provide "All aggregated category data for 6 months".
-    // I will approximate using `insights` (Current Month) for Donut for now, OR fetch last 6 months of Monthly Insights?
-    // Better: `getMonthlyInsights` takes a `month` param.
-    // I can't loop fetch 6 times easily in constructor without `forkJoin`.
-
-    // Let's assume for this "Demo" we visually show the "Current Month" breakdown for Donut.
-    // And for Heatmap... we might be stuck without proper endpoint. 
-    // Unless `getRollups` was *intended* to be `MonthlyRollup` list.
-    // Let's look at `dashboard-charts.component.ts` (Step 860) again. 
-    // It called `/analytics/rollups`.
-    // And expected `res` to be array of `{ month, categoryId, totalExpense }`.
-    // BUT `getRollups` in controller (Step 900) returns `{ weeks, income... }`.
-    // So the previous code was BROKEN regarding data shape.
-
-    // I should fix the backend `getRollups` or add a new endpoint `getCategoryRollups`.
-    // Since I can't easily add backend endpoints in this single turn effectively without risk (and user didn't ask for backend fix explicitly, but "charts"),
-    // I will try to use `getMonthlyInsights` for Current Month Donut.
-    // And for Heatmap, I might have to disable it or show Dummy Data / Partial Data if I can't get history.
-    // Wait, I can try to use `getWaterfall` (Monthly Totals) for the Bar Charts.
-    // I will prioritize fixing the Bar Chart and Waterfall Chart.
-    // I will use "Current Month" for Donut.
-
+    const isDark = this.themeService.theme() === 'dark';
+    const textColor = isDark ? '#e5e7eb' : '#374151';
+    const borderColor = isDark ? '#0f172a' : '#fff';
     const details = this.insights()?.categoryDetails || [];
     const top5 = details.slice(0, 5).map((d: any) => ({
       name: this.getCategoryName(d.categoryId),
@@ -292,50 +245,86 @@ export class DashboardChartsComponent {
 
     return {
       tooltip: { trigger: 'item' },
-      legend: { orient: 'vertical', left: 'left', bottom: 0 },
+      legend: { orient: 'vertical', left: 'left', bottom: 0, textStyle: { color: textColor } },
       series: [{
         type: 'pie', radius: ['40%', '70%'],
         avoidLabelOverlap: false,
-        itemStyle: { borderRadius: 10, borderColor: '#fff', borderWidth: 2 },
+        itemStyle: { borderRadius: 10, borderColor, borderWidth: 2 },
         label: { show: false },
         data: top5
-      }]
+      }],
+      media: [
+        {
+          query: { maxWidth: 520 },
+          option: {
+            legend: { orient: 'horizontal', left: 'center', bottom: 0 }
+          }
+        }
+      ]
     };
   });
 
   heatmapChart = computed((): EChartsOption => {
-    // Without category history, we can't do a real Category x Month heatmap.
-    // I will render a "Daily Spending Intensity" heatmap using `getHeatmap` endpoint (which exists!).
-    // Controller `getHeatmap` returns `{ year, data: [[date, value], ...] }`.
-    // Usage: Calendar Heatmap.
+    const isDark = this.themeService.theme() === 'dark';
+    const textColor = isDark ? '#e5e7eb' : '#374151';
+    const mutedText = isDark ? '#94a3b8' : '#6b7280';
+    const borderColor = isDark ? 'rgba(148,163,184,0.22)' : '#d1d5db';
+    const lineColor = isDark ? 'rgba(148,163,184,0.25)' : '#e5e7eb';
     const raw = this.heatmapData();
     if (!raw) return {};
+    const filteredData = (raw.data || []).filter((d: any) => Number(d?.[1] || 0) > 0);
+    const maxValue = 10000;
 
     return {
-      tooltip: { position: 'top', formatter: (p: any) => `${p.data[0]}: ৳${p.data[1]}` },
+      backgroundColor: isDark ? '#0f172a' : 'transparent',
+      tooltip: {
+        position: 'top',
+        formatter: (p: any) => `${p.data[0]}: ${p.data[1] || 0}`
+      },
       visualMap: {
         min: 0,
-        max: 10000,
+        max: Math.max(1, maxValue),
         calculable: true,
         orient: 'horizontal',
         left: 'center',
-        top: 'top'
+        top: 10,
+        itemWidth: 14,
+        itemHeight: 140,
+        textStyle: { fontWeight: 700, color: textColor },
+        inRange: {
+          color: isDark
+            ? ['#1f2937', '#f97316', '#fbbf24']
+            : ['#fff7ed', '#fb923c', '#7c2d12']
+        }
       },
       calendar: {
-        top: 120,
-        left: 30,
-        right: 30,
-        cellSize: ['auto', 13],
+        top: 190,
+        left: 10,
+        right: 10,
+        cellSize: ['auto', 22],
         range: raw.year,
         itemStyle: {
-          borderWidth: 0.5
+          borderWidth: 1,
+          borderColor,
+          color: isDark ? '#111827' : '#ffffff'
         },
+        dayLabel: { color: mutedText, fontSize: 10 },
+        monthLabel: { color: textColor, fontWeight: 700, fontSize: 12 },
+        splitLine: { show: true, lineStyle: { color: lineColor } },
         yearLabel: { show: false }
       },
       series: {
         type: 'heatmap',
         coordinateSystem: 'calendar',
-        data: raw.data
+        data: filteredData,
+        label: {
+          show: true,
+          formatter: (p: any) => (p.data?.[0] || '').slice(-2),
+          color: isDark ? '#f8fafc' : '#0f172a',
+          fontSize: 10,
+          textBorderColor: isDark ? 'rgba(15,23,42,0.75)' : 'rgba(255,255,255,0.85)',
+          textBorderWidth: 2
+        }
       }
     };
   });
@@ -343,7 +332,6 @@ export class DashboardChartsComponent {
   heatmapData = signal<any>(null);
 
   budgetProgress = computed(() => {
-    // Use insights (current month actuals) vs Category Budget
     const details = this.insights()?.categoryDetails || [];
     const cats = this.catService.categories();
 

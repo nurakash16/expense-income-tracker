@@ -1,0 +1,47 @@
+<div class="app">
+  <header class="topbar glass">
+    <div class="left">
+      <button class="iconBtn mobileOnly" (click)="toggleSidebar()">☰</button>
+      <div class="brand">
+        <div class="brandDot"></div>
+        <div>
+          <div class="brandTitle">Income / Expense</div>
+          <div class="brandSub">Tracker</div>
+        </div>
+      </div>
+    </div>
+    <div class="right">
+      <button class="iconBtn">🔔</button>
+      <button class="iconBtn">🌙</button>
+      <div class="avatar">JD</div>
+    </div>
+  </header>
+
+  <div class="body">
+    <aside class="sidebar glass" [class.open]="sidebarOpen()">
+      <a *ngFor="let item of nav"
+         class="navItem"
+         [class.active]="activeRoute()===item.route || activeRoute().startsWith(item.route + '/')"
+         [routerLink]="item.route">
+        <span class="navIcon">{{ item.icon }}</span>
+        <span class="navLabel">{{ item.label }}</span>
+      </a>
+    </aside>
+
+    <div class="overlay" *ngIf="sidebarOpen()" (click)="sidebarOpen.set(false)"></div>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <nav class="bottomNav glass">
+    <a *ngFor="let item of nav.slice(0,5)"
+       class="bottomItem"
+       [class.active]="activeRoute()===item.route || activeRoute().startsWith(item.route + '/')"
+       [routerLink]="item.route">
+      <div class="bIcon">{{ item.icon }}</div>
+      <div class="bLabel">{{ item.label }}</div>
+    </a>
+  </nav>
+</div>

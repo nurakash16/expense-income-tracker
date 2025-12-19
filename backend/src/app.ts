@@ -8,11 +8,10 @@ import authRoutes from './routes/auth.routes';
 import categoryRoutes from './routes/category.routes';
 import transactionRoutes from './routes/transaction.routes';
 import { getKpis } from './controllers/kpi.controller';
-import { getHeatmap, getWaterfall, getRollups, getMonthlyInsights } from './controllers/analytics.controller';
+import { getHeatmap, getWaterfall, getRollups, getMonthlyInsights, getAnalyticsOverview } from './controllers/analytics.controller';
 import { authMiddleware } from './middleware/auth.middleware';
 
 import notificationsRoutes from './routes/notifications.routes';
-import categoryRulesRoutes from './routes/categoryRules.routes';
 
 const app = express();
 
@@ -32,7 +31,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/notifications', notificationsRoutes);
-app.use('/api/category-rules', categoryRulesRoutes);
 app.use('/api/salary', salaryRoutes);
 app.use('/api/settings', settingsRoutes);
 
@@ -41,6 +39,7 @@ app.get('/api/analytics/heatmap', authMiddleware as any, getHeatmap);
 app.get('/api/analytics/waterfall', authMiddleware as any, getWaterfall);
 app.get('/api/analytics/rollups', authMiddleware as any, getRollups);
 app.get('/api/analytics/monthly', authMiddleware as any, getMonthlyInsights);
+app.get('/api/analytics/overview', authMiddleware as any, getAnalyticsOverview);
 
 // Manual migration trigger for serverless environments
 import { AppDataSource } from './config/db';

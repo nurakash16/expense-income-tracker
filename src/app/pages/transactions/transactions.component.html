@@ -1,199 +1,162 @@
-<div class="mb-4 d-flex align-items-center justify-content-between">
-  <div>
-    <h2 class="fw-bold mb-1 text-dark">Transactions</h2>
-    <div class="text-muted">Manage your financial records efficiently.</div>
-  </div>
-  <div class="d-flex gap-2">
-    <button class="btn btn-outline-success d-flex align-items-center gap-2" (click)="export()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
-        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
-      </svg>
-      Export CSV
-    </button>
-    <label class="btn btn-outline-primary d-flex align-items-center gap-2 mb-0">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M.5 2.5A.5.5 0 0 1 1 2h14a.5.5 0 0 1 .5.5V4H0V2.5zM0 5h15.5v8a.5.5 0 0 1-.5.5H1a1 1 0 0 1-1-1V5z"/>
-      </svg>
-      Import CSV
-      <input type="file" class="d-none" (change)="onCsv($event)">
-    </label>
-  </div>
-</div>
+<section class="tx-shell">
+  <header class="tx-header">
+    <div>
+      <h2>Transactions</h2>
+      <p>Manage your financial records efficiently.</p>
+    </div>
+    <div class="tx-actions">
+      <button class="btn btn-outline-success" (click)="export()">Export CSV</button>
+      <label class="btn btn-outline-primary mb-0">
+        Import CSV
+        <input type="file" class="d-none" (change)="onCsv($event)">
+      </label>
+    </div>
+  </header>
 
-<div class="row g-4">
-  <!-- Editor Column -->
-  <div class="col-lg-4">
-    <div class="card shadow-sm border-0 h-100">
-      <div class="card-header bg-white border-bottom py-3">
-        <h6 class="m-0 fw-bold text-primary-custom">{{ editingId() ? 'Edit Transaction' : 'New Transaction' }}</h6>
-      </div>
-      <div class="card-body">
-        <form [formGroup]="form" (ngSubmit)="save()">
-          <div class="mb-3">
-            <label class="form-label text-muted small fw-bold text-uppercase">Type</label>
-            <div class="d-flex gap-2">
-              <div class="form-check p-0 flex-fill">
-                <input type="radio" class="btn-check" name="type" id="type-expense" formControlName="type"
-                  value="expense">
-                <label class="btn btn-outline-danger w-100" for="type-expense">Expense</label>
-              </div>
-              <div class="form-check p-0 flex-fill">
-                <input type="radio" class="btn-check" name="type" id="type-income" formControlName="type"
-                  value="income">
-                <label class="btn btn-outline-success w-100" for="type-income">Income</label>
-              </div>
-            </div>
+  <div class="tx-grid">
+    <div class="tx-panel">
+      <div class="panel-title">{{ editingId() ? 'Edit Transaction' : 'New Transaction' }}</div>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="field">
+          <div class="choice-row">
+            <label class="choice-pill">
+              <input type="radio" name="type" formControlName="type" value="expense">
+              <span>Expense</span>
+            </label>
+            <label class="choice-pill">
+              <input type="radio" name="type" formControlName="type" value="income">
+              <span>Income</span>
+            </label>
           </div>
+        </div>
 
-          <div class="mb-3">
-            <label class="form-label text-muted small fw-bold text-uppercase">Amount</label>
-            <div class="input-group">
-              <span class="input-group-text border-end-0 bg-light text-muted">৳</span>
-              <input class="form-control border-start-0 bg-light fw-bold fs-5" type="number" formControlName="amount"
-                placeholder="0.00" />
-            </div>
+        <div class="field">
+          <label>Amount</label>
+          <div class="input-group">
+            <span class="input-group-text">BDT</span>
+            <input class="form-control" type="number" formControlName="amount" placeholder="0.00" />
           </div>
+        </div>
 
-          <div class="mb-3">
-            <label class="form-label text-muted small fw-bold text-uppercase">Category</label>
-          <select class="form-select bg-light" formControlName="categoryId">
+        <div class="field">
+          <label>Category</label>
+          <select class="form-select" formControlName="categoryId">
             <option value="" disabled selected>Select category</option>
             <option *ngFor="let c of filteredCats()" [value]="c.id">{{ c.name }}</option>
           </select>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label text-muted small fw-bold text-uppercase">Date</label>
-            <input class="form-control bg-light" type="date" formControlName="date" />
-          </div>
-
-          <div class="mb-4">
-            <label class="form-label text-muted small fw-bold text-uppercase">Note</label>
-            <textarea class="form-control bg-light" rows="3" formControlName="note"
-              placeholder="Add a description..."></textarea>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label text-muted small fw-bold text-uppercase">Payment Method</label>
-            <select class="form-select bg-light" formControlName="paymentMethod">
-              <option value="cash">Cash</option>
-              <option value="card">Card</option>
-              <option value="bank">Bank Transfer</option>
-            </select>
-          </div>
-
-          <div class="d-flex gap-2">
-            <button class="btn btn-primary w-100 py-2 shadow-sm" type="submit">
-              {{ editingId() ? 'Save Changes' : 'Add Transaction' }}
-            </button>
-            <button *ngIf="editingId()" type="button" class="btn btn-light" (click)="startAdd()">Cancel</button>
-          </div>
-        </form>
-
-        <hr>
-        <div class="d-flex align-items-center justify-content-between">
-          <div class="text-muted small">CSV Import</div>
-          <input type="file" class="form-control form-control-sm" style="max-width: 220px;" (change)="onCsv($event)">
         </div>
-        <div class="small mt-2 text-muted">Columns: type, amount, date, categoryId?, note?, paymentMethod?</div>
-        <div class="mt-2" *ngIf="csvResult">
-          <div class="small">Imported: {{ csvResult.imported }}</div>
-          <div class="text-danger small" *ngIf="csvResult.errors?.length">Errors: {{ csvResult.errors.length }}</div>
+
+        <div class="field">
+          <label>Date</label>
+          <input class="form-control" type="date" formControlName="date" />
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- List Column -->
-  <div class="col-lg-8">
-    <div class="card shadow-sm border-0 h-100">
-      <div
-        class="card-header bg-white border-bottom py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
-        <h6 class="m-0 fw-bold">History</h6>
+        <div class="field">
+          <label>Note</label>
+          <textarea class="form-control note-input" rows="2" formControlName="note" placeholder="Add a description..."></textarea>
+        </div>
 
-        <div class="d-flex gap-2 flex-wrap align-items-center justify-content-end">
-          <input type="text" class="form-control form-control-sm" style="max-width: 200px;"
-            placeholder="Search transactions..." [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)">
-
-          <select class="form-select form-select-sm" style="width:120px" [ngModel]="filterType()"
-            (ngModelChange)="filterType.set($event)">
-            <option value="all">All Types</option>
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
+        <div class="field">
+          <label>Payment Method</label>
+          <select class="form-select" formControlName="paymentMethod">
+            <option value="cash">Cash</option>
+            <option value="card">Card</option>
+            <option value="bank">Bank Transfer</option>
           </select>
-
-          <input type="date" class="form-control form-control-sm" style="width:160px" [ngModel]="startDate()"
-            (ngModelChange)="startDate.set($event)">
-
-          <input type="date" class="form-control form-control-sm" style="width:160px" [ngModel]="endDate()"
-            (ngModelChange)="endDate.set($event)">
-
-          <button class="btn btn-sm btn-outline-primary" (click)="applyFilters()">Apply</button>
         </div>
+
+        <div class="actions">
+          <button class="btn btn-primary w-100" type="submit">
+            {{ editingId() ? 'Save Changes' : 'Add Transaction' }}
+          </button>
+          <button *ngIf="editingId()" type="button" class="btn btn-light w-100" (click)="startAdd()">Cancel</button>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="tx-panel history-panel">
+      <div class="panel-title">History</div>
+      <div class="filters">
+        <input type="text" class="form-control form-control-sm"
+          placeholder="Search transactions..." [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)">
+
+        <select class="form-select form-select-sm" [ngModel]="filterType()"
+          (ngModelChange)="filterType.set($event)">
+          <option value="all">All Types</option>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+
+        <input type="date" class="form-control form-control-sm" [ngModel]="startDate()"
+          (ngModelChange)="startDate.set($event)">
+
+        <input type="date" class="form-control form-control-sm" [ngModel]="endDate()"
+          (ngModelChange)="endDate.set($event)">
+
+        <button class="btn btn-sm btn-outline-primary" (click)="applyFilters()">Apply</button>
       </div>
 
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table align-middle hover-bg-light mb-0">
-            <thead class="bg-light">
-              <tr>
-                <th class="ps-4">Date</th>
-                <th>Category</th>
-                <th>Method</th>
-                <th>Note</th>
-                <th class="text-end">Amount</th>
-                <th class="text-end pe-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let t of filtered()">
-                <td class="ps-4 text-muted small font-monospace">{{ t.date }}</td>
-                <td>
-                  <span class="badge rounded-pill fw-normal" [class.bg-success-subtle]="t.type==='income'"
-                    [class.text-success-emphasis]="t.type==='income'" [class.bg-danger-subtle]="t.type==='expense'"
-                    [class.text-danger-emphasis]="t.type==='expense'">
-                    {{ categoryName(t.categoryId) }}
-                  </span>
-                </td>
-                <td class="text-capitalize small">{{ t.paymentMethod || 'cash' }}</td>
-                <td class="text-truncate" style="max-width: 200px;" title="{{t.note}}">{{ t.note || '-' }}</td>
-                <td class="text-end fw-bold" [class.text-success]="t.type==='income'"
-                  [class.text-dark]="t.type==='expense'">
-                  {{ t.type === 'income' ? '+' : '-' }}{{ t.amount | currency:'BDT':'symbol-narrow':'1.0-0' }}
-                </td>
-                <td class="text-end pe-4">
-                  <div class="btn-group">
-                    <button class="btn btn-sm btn-light text-muted" (click)="edit(t)" title="Edit">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
-                        viewBox="0 0 16 16">
-                        <path
-                          d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
-                      </svg>
-                    </button>
-                    <button class="btn btn-sm btn-light text-danger" (click)="remove(t.id)" title="Delete">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
-                        viewBox="0 0 16 16">
-                        <path
-                          d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
-                        <path fill-rule="evenodd"
-                          d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
-                      </svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr *ngIf="filtered().length===0">
-                <td colspan="5" class="text-center py-5 text-muted">
-                  <div class="mb-2">No transactions found.</div>
-                  <button class="btn btn-sm btn-link" (click)="filterType.set('all'); searchQuery.set('')">Clear
-                    Filters</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="table-wrap">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Method</th>
+              <th>Note</th>
+              <th class="text-end">Amount</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of filtered()">
+              <td class="text-muted small font-monospace">{{ t.date }}</td>
+              <td>
+                <span class="badge rounded-pill fw-normal" [class.bg-success-subtle]="t.type==='income'"
+                  [class.text-success-emphasis]="t.type==='income'" [class.bg-danger-subtle]="t.type==='expense'"
+                  [class.text-danger-emphasis]="t.type==='expense'">
+                  {{ categoryName(t.categoryId) }}
+                </span>
+              </td>
+              <td class="text-capitalize small">{{ t.paymentMethod || 'cash' }}</td>
+              <td class="text-truncate" style="max-width: 200px;" title="{{t.note}}">{{ t.note || '-' }}</td>
+              <td class="text-end fw-bold" [class.text-success]="t.type==='income'"
+                [class.text-dark]="t.type==='expense'">
+                {{ t.type === 'income' ? '+' : '-' }}{{ t.amount | currency:'BDT':'symbol-narrow':'1.0-0' }}
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <button class="btn btn-sm btn-light text-muted" (click)="edit(t)" title="Edit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
+                      viewBox="0 0 16 16">
+                      <path
+                        d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
+                    </svg>
+                  </button>
+                  <button class="btn btn-sm btn-light text-danger" (click)="remove(t.id)" title="Delete">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
+                      viewBox="0 0 16 16">
+                      <path
+                        d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                      <path fill-rule="evenodd"
+                        d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filtered().length===0">
+              <td colspan="6" class="text-center py-5 text-muted">
+                <div class="mb-2">No transactions found.</div>
+                <button class="btn btn-sm btn-link" (click)="filterType.set('all'); searchQuery.set('')">
+                  Clear Filters
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
-</div>
+</section>

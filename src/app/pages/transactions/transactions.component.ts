@@ -4,16 +4,19 @@ import { ReactiveFormsModule, FormBuilder, FormsModule } from '@angular/forms';
 import { TransactionService } from '../../services/transaction.service';
 import { CategoryService } from '../../services/category.service';
 import { Transaction } from '../../models/transaction.model';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './transactions.component.html',
+  styleUrls: ['./transactions.component.css'],
 })
 export class TransactionsComponent implements OnInit {
   private fb = inject(FormBuilder);
   private transactionService = inject(TransactionService);
   private categoryService = inject(CategoryService);
+  private auth = inject(AuthService);
 
   editingId = signal<string | null>(null);
   filterType = signal<'all' | 'income' | 'expense'>('all');
@@ -139,10 +142,11 @@ export class TransactionsComponent implements OnInit {
     if (!file) return;
     const fd = new FormData();
     fd.append('file', file);
+    const token = this.auth.getToken();
     // First dry-run to validate and pre-create categories (reported only)
     fetch(`${location.origin.replace(':4200',':3000')}/api/transactions/import/csv?dryRun=true`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` || '' },
+      headers: { Authorization: token ? `Bearer ${token}` : '' },
       body: fd
     }).then(r => r.json()).then(res => {
       this.csvResult = res;
@@ -150,7 +154,7 @@ export class TransactionsComponent implements OnInit {
       if (!res.errors || res.errors.length === 0) {
         return fetch(`${location.origin.replace(':4200',':3000')}/api/transactions/import/csv`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` || '' },
+          headers: { Authorization: token ? `Bearer ${token}` : '' },
           body: fd
         }).then(r => r.json());
       }

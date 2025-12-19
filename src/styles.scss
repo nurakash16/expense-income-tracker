@@ -19,8 +19,147 @@ body {
 
 body {
     margin: 0;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-    background-color: #f5f7fa;
+    font-family: 'Inter', 'Helvetica Neue', sans-serif;
+    background: radial-gradient(circle at 15% 20%, rgba(99, 102, 241, 0.22), transparent 28%),
+        radial-gradient(circle at 85% 10%, rgba(45, 212, 191, 0.2), transparent 24%),
+        radial-gradient(circle at 50% 80%, rgba(14, 165, 233, 0.18), transparent 28%),
+        #0b1221;
+    color: #e5e7eb;
+}
+
+.dashboard-page .pulse-card {
+    border-radius: 14px;
+    padding: 12px 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-page .pulse-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+}
+
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #dc2626, #f97316);
+}
+
+.bg-gradient-dark {
+    background: linear-gradient(135deg, #111827, #374151);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+}
+
+.hero-card {
+    background: linear-gradient(135deg, #0f172a, #1e2a44);
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hero-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.25), transparent 40%),
+        radial-gradient(circle at 80% 0%, rgba(45, 212, 191, 0.2), transparent 35%),
+        radial-gradient(circle at 40% 90%, rgba(14, 165, 233, 0.2), transparent 45%);
+}
+
+.hero-card .btn-glass {
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+}
+
+.hero-card .btn-glass.active {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(45, 212, 191, 0.35));
+    border-color: rgba(255, 255, 255, 0.45);
+}
+
+.bg-glass {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #fff !important;
+}
+
+.stat-card {
+    border-radius: 16px;
+    padding: 16px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.pill {
+    width: 12px;
+    height: 32px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.pill-income { background: linear-gradient(180deg, #22c55e, #16a34a); }
+.pill-expense { background: linear-gradient(180deg, #ef4444, #f97316); }
+.pill-net { background: linear-gradient(180deg, #0ea5e9, #2563eb); }
+.pill-savings { background: linear-gradient(180deg, #c084fc, #7c3aed); }
+
+.card {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 18px;
+    box-shadow: 0 16px 60px rgba(0, 0, 0, 0.35);
+    background: linear-gradient(180deg, rgba(18, 24, 41, 0.9), rgba(15, 18, 31, 0.92));
+}
+
+.neo-glow {
+    box-shadow:
+        0 14px 45px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.glass {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hero-stat {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.dashboard-page {
+    color: #e5e7eb;
+}
+
+.floating-shapes::before,
+.floating-shapes::after {
+    content: '';
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2), transparent 60%);
+    filter: blur(10px);
+}
+.floating-shapes::before { top: -40px; left: 10%; }
+.floating-shapes::after { bottom: -60px; right: 8%; }
+
+.chart-card {
+    background: linear-gradient(180deg, rgba(17, 24, 39, 0.95), rgba(12, 17, 28, 0.95));
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.chart-lg,
+.chart-sm {
+    background: linear-gradient(180deg, rgba(12, 17, 28, 0.85), rgba(9, 12, 21, 0.9));
+    border-radius: 12px;
 }
 
 /* Glossy / Glassmorphism Utilities */

@@ -15,7 +15,6 @@ const kpi_controller_1 = require("./controllers/kpi.controller");
 const analytics_controller_1 = require("./controllers/analytics.controller");
 const auth_middleware_1 = require("./middleware/auth.middleware");
 const notifications_routes_1 = __importDefault(require("./routes/notifications.routes"));
-const categoryRules_routes_1 = __importDefault(require("./routes/categoryRules.routes"));
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
     origin: (origin, cb) => cb(null, true),
@@ -31,7 +30,6 @@ app.use('/api/auth', auth_routes_1.default);
 app.use('/api/categories', category_routes_1.default);
 app.use('/api/transactions', transaction_routes_1.default);
 app.use('/api/notifications', notifications_routes_1.default);
-app.use('/api/category-rules', categoryRules_routes_1.default);
 app.use('/api/salary', salary_routes_1.default);
 app.use('/api/settings', settings_routes_1.default);
 app.get('/api/kpi', auth_middleware_1.authMiddleware, kpi_controller_1.getKpis);
@@ -39,6 +37,7 @@ app.get('/api/analytics/heatmap', auth_middleware_1.authMiddleware, analytics_co
 app.get('/api/analytics/waterfall', auth_middleware_1.authMiddleware, analytics_controller_1.getWaterfall);
 app.get('/api/analytics/rollups', auth_middleware_1.authMiddleware, analytics_controller_1.getRollups);
 app.get('/api/analytics/monthly', auth_middleware_1.authMiddleware, analytics_controller_1.getMonthlyInsights);
+app.get('/api/analytics/overview', auth_middleware_1.authMiddleware, analytics_controller_1.getAnalyticsOverview);
 // Manual migration trigger for serverless environments
 const db_1 = require("./config/db");
 app.get('/api/migrate-now', async (req, res) => {
