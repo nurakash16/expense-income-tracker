@@ -338,6 +338,11 @@
   font-weight: 800;
   letter-spacing: 0.02em;
 }
+:host-context([data-bs-theme="light"]) .badge.bg-light{
+  background: rgba(15,23,42,0.06);
+  border-color: rgba(15,23,42,0.12);
+  color: var(--cat-ink);
+}
 
 :host .btn-group .btn{
   border-radius: 10px;

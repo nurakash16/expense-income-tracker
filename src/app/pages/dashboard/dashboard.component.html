@@ -107,7 +107,9 @@
       </div>
     </div>
 
-    <div class="kpiX glassX">
+    <div class="kpiX glassX health-kpi"
+         [class.health-alert]="alertsList().length"
+         [class.health-ok]="!alertsList().length">
       <div class="kpiTop">
         <div class="kpiName">Health</div>
         <div class="badgeX glow">SMART</div>
@@ -122,9 +124,15 @@
         {{ alertsList().length ? (alertsList().length + ' unusual spikes detected') : 'No unusual activity detected' }}
       </div>
 
-      <div class="miniPills">
-        <span class="pill">Auto insights</span>
-        <span class="pill">Trends</span>
+      <div class="health-list">
+        <ng-container *ngIf="expenseBreakdown().length; else noHealthCats">
+          <div class="health-row" *ngFor="let row of expenseBreakdown() | slice:0:3">
+            <span class="health-amount">{{ row.value | number:'1.0-0' }}</span>
+          </div>
+        </ng-container>
+        <ng-template #noHealthCats>
+          <div class="health-empty">No expense data yet.</div>
+        </ng-template>
       </div>
     </div>
   </section>
@@ -143,105 +151,88 @@
         </a>
       </div>
 
-      <div class="quickStats">
-        <div class="qs">
-          <div class="qsLabel">Income</div>
-          <div class="qsVal successText">{{ overview()?.totals?.income | currency:'BDT' }}</div>
-        </div>
-        <div class="qs">
-          <div class="qsLabel">Expense</div>
-          <div class="qsVal dangerText">{{ overview()?.totals?.expense | currency:'BDT' }}</div>
-        </div>
-        <div class="qs">
-          <div class="qsLabel">Net</div>
-          <div class="qsVal" [class.successText]="(overview()?.totals?.net||0)>=0" [class.dangerText]="(overview()?.totals?.net||0)<0">
-            {{ overview()?.totals?.net | currency:'BDT' }}
-          </div>
-        </div>
-        <div class="qs">
-          <div class="qsLabel">Savings</div>
-          <div class="qsVal">{{ savingsRate() | number:'1.0-0' }}%</div>
-        </div>
-      </div>
+      <div class="analytics-body">
+        <!-- Quick stats removed per request -->
 
-      <div class="dividerX"></div>
-
-      <div class="infoStripGrid desktop-only">
-        <div class="infoStrip tipCard filled-tip">
-          <div class="infoIcon">?</div>
-          <div class="infoText">
-            <div class="infoTitle">Live dashboard</div>
-            <div class="infoSub">Auto-refresh keeps these numbers current.</div>
-            <div class="infoMeta">
-              <div class="infoStat">
-                <span class="infoLabel">Last sync</span>
-                <span class="infoValue">{{ lastSyncedLabel }}</span>
-              </div>
-              <div class="infoStat">
-                <span class="infoLabel">Items in range</span>
-                <span class="infoValue">{{ periodTransactionCount() }}</span>
-              </div>
-              <div class="infoStat">
-                <span class="infoLabel">Latest transaction</span>
-                <span class="infoValue">{{ latestTxLabel }}</span>
+        <div class="analytics-live desktop-only">
+          <div class="infoStripGrid">
+            <div class="infoStrip tipCard filled-tip">
+              <div class="infoIcon">?</div>
+              <div class="infoText">
+                <div class="infoTitle">Live dashboard</div>
+                <div class="infoSub">Auto-refresh keeps these numbers current.</div>
+                <div class="infoMeta">
+                  <div class="infoStat">
+                    <span class="infoLabel">Last sync</span>
+                    <span class="infoValue">{{ lastSyncedLabel }}</span>
+                  </div>
+                  <div class="infoStat">
+                    <span class="infoLabel">Items in range</span>
+                    <span class="infoValue">{{ periodTransactionCount() }}</span>
+                  </div>
+                  <div class="infoStat">
+                    <span class="infoLabel">Latest transaction</span>
+                    <span class="infoValue">{{ latestTxLabel }}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="infoStrip tipCard filled-tip compact">
-          <div class="infoIcon">!</div>
-          <div class="infoText">
-            <div class="infoTitle">Activity pulse</div>
-            <div class="infoSub">Signals from your latest activity.</div>
-            <div class="infoMeta">
-              <div class="infoStat">
-                <span class="infoLabel">New in 7 days</span>
-                <span class="infoValue">{{ recentTransactionsCount() }}</span>
-              </div>
-              <div class="infoStat">
-                <span class="infoLabel">Avg daily expense</span>
-                <span class="infoValue">{{ avgDailyExpenseLabel }}</span>
-              </div>
-              <div class="infoStat">
-                <span class="infoLabel">Top spending</span>
-                <span class="infoValue">{{ topSpendingCategoryLabel }}</span>
+            <div class="infoStrip tipCard filled-tip compact">
+              <div class="infoIcon">!</div>
+              <div class="infoText">
+                <div class="infoTitle">Activity pulse</div>
+                <div class="infoSub">Signals from your latest activity.</div>
+                <div class="infoMeta">
+                  <div class="infoStat">
+                    <span class="infoLabel">New in 7 days</span>
+                    <span class="infoValue">{{ recentTransactionsCount() }}</span>
+                  </div>
+                  <div class="infoStat">
+                    <span class="infoLabel">Avg daily expense</span>
+                    <span class="infoValue">{{ avgDailyExpenseLabel }}</span>
+                  </div>
+                  <div class="infoStat">
+                    <span class="infoLabel">Top spending</span>
+                    <span class="infoValue">{{ topSpendingCategoryLabel }}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="infoStrip tipCard filled-tip compact">
-          <div class="infoIcon">$</div>
-          <div class="infoText">
-            <div class="infoTitle">Savings timeline</div>
-            <div class="infoSub">How past months stack up.</div>
-            <div class="infoMeta">
-              <div class="infoStat">
-                <span class="infoLabel">Prev months total</span>
-                <span class="infoValue">{{ previousSavingsLabel }}</span>
-              </div>
-              <div class="infoStat">
-                <span class="infoLabel">Top month</span>
-                <span class="infoValue">{{ topSavingsLabel }}</span>
-              </div>
-              <div class="infoStat">
-                <span class="infoLabel">Last month</span>
-                <span class="infoValue">{{ lastSavingsLabel }}</span>
+            <div class="infoStrip tipCard filled-tip compact">
+              <div class="infoIcon">$</div>
+              <div class="infoText">
+                <div class="infoTitle">Savings timeline</div>
+                <div class="infoSub">How past months stack up.</div>
+                <div class="infoMeta">
+                  <div class="infoStat">
+                    <span class="infoLabel">Prev months total</span>
+                    <span class="infoValue">{{ previousSavingsLabel }}</span>
+                  </div>
+                  <div class="infoStat">
+                    <span class="infoLabel">Top month</span>
+                    <span class="infoValue">{{ topSavingsLabel }}</span>
+                  </div>
+                  <div class="infoStat">
+                    <span class="infoLabel">Last month</span>
+                    <span class="infoValue">{{ lastSavingsLabel }}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="infoStrip tipCard filled-tip compact">
-          <div class="infoIcon">$</div>
-          <div class="infoText">
-            <div class="infoTitle">Savings (net in range)</div>
-            <div class="infoSub">Income minus expense for the selected range.</div>
-            <div class="infoMeta">
-              <div class="infoStat">
-                <span class="infoLabel">Net savings</span>
-                <span class="infoValue">{{ savingsBalanceLabel }}</span>
+            <div class="infoStrip tipCard filled-tip compact">
+              <div class="infoIcon">$</div>
+              <div class="infoText">
+                <div class="infoTitle">Savings (net in range)</div>
+                <div class="infoSub">Income minus expense for the selected range.</div>
+                <div class="infoMeta">
+                  <div class="infoStat">
+                    <span class="infoLabel">Net savings</span>
+                    <span class="infoValue">{{ savingsBalanceLabel }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -250,153 +241,7 @@
 
     </div>
 
-    <div class="cardX glassX">
-      <div class="cardHead">
-        <div>
-          <div class="cardTitle">Monthly snapshot</div>
-          <div class="cardSub">Salary & savings</div>
-        </div>
-      </div>
-
-      <app-monthly-summary [month]="currentMonth()"></app-monthly-summary>
-    </div>
-
-    <div class="cardX glassX">
-      <div class="cardHead">
-        <div>
-          <div class="cardTitle">Alerts</div>
-          <div class="cardSub">Unusual spikes</div>
-        </div>
-        <div class="badgeX warn">{{ alertsList().length ? 'Alert' : 'OK' }}</div>
-      </div>
-
-      <ng-container *ngIf="alertsList().length; else noAlerts">
-        <div class="listX">
-          <div *ngFor="let a of alertsList()" class="alertX">
-            <div class="alertIcon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M12 9v4"></path>
-                <path d="M12 17h.01"></path>
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-              </svg>
-            </div>
-            <div class="alertBody">
-              <div class="alertTitle">{{ getCategoryName(a.categoryId) }}</div>
-              <div class="alertSub">Spending higher than usual.</div>
-            </div>
-          </div>
-        </div>
-      </ng-container>
-
-      <ng-template #noAlerts>
-        <div class="emptyX compact">
-          <div class="emptyIcon">?</div>
-          <div>
-            <div class="emptyTitle">Everything looks normal</div>
-            <div class="emptySub">No unusual spending detected.</div>
-          </div>
-        </div>
-      </ng-template>
-    </div>
-
-    <div class="cardX glassX">
-      <div class="cardHead">
-        <div>
-          <div class="cardTitle">Top transactions</div>
-          <div class="cardSub">Largest by amount</div>
-        </div>
-      </div>
-
-      <ng-container *ngIf="topTransactions().length; else noTx">
-        <div class="listX">
-          <div *ngFor="let tx of topTransactions()" class="rowX">
-            <div class="rowLeft">
-              <div class="rowTitle">{{ tx.categoryName }}</div>
-              <div class="rowSub">{{ tx.date | date:'mediumDate' }}</div>
-            </div>
-            <div class="rowRight"
-                 [class.successText]="tx.type==='income'"
-                 [class.dangerText]="tx.type==='expense'">
-              {{ tx.amount | currency:'BDT' }}
-            </div>
-          </div>
-        </div>
-      </ng-container>
-
-      <ng-template #noTx>
-        <div class="emptyX">
-          <div class="emptyIcon">??</div>
-          <div>
-            <div class="emptyTitle">No transactions</div>
-            <div class="emptySub">Add income/expense to see activity here.</div>
-          </div>
-        </div>
-      </ng-template>
-    </div>
-
-    <div class="cardX glassX">
-      <div class="cardHead">
-        <div>
-          <div class="cardTitle">Expense breakdown</div>
-          <div class="cardSub">Top categories</div>
-        </div>
-      </div>
-
-      <ng-container *ngIf="expenseBreakdown().length; else noExp">
-        <div class="listX">
-          <div *ngFor="let row of expenseBreakdown()" class="rowX">
-            <div class="rowLeft">
-              <div class="rowTitle">{{ row.name }}</div>
-              <div class="rowSub">Category</div>
-            </div>
-            <div class="rowRight dangerText">{{ row.value | currency:'BDT' }}</div>
-          </div>
-        </div>
-      </ng-container>
-
-      <ng-template #noExp>
-        <div class="emptyX compact">
-          <div class="emptyIcon">??</div>
-          <div>
-            <div class="emptyTitle">No expense data</div>
-            <div class="emptySub">Add expenses to see categories.</div>
-          </div>
-        </div>
-      </ng-template>
-    </div>
-
-    <div class="cardX glassX">
-      <div class="cardHead">
-        <div>
-          <div class="cardTitle">Income breakdown</div>
-          <div class="cardSub">Top categories</div>
-        </div>
-      </div>
-
-      <ng-container *ngIf="incomeBreakdown().length; else noInc">
-        <div class="listX">
-          <div *ngFor="let row of incomeBreakdown()" class="rowX">
-            <div class="rowLeft">
-              <div class="rowTitle">{{ row.name }}</div>
-              <div class="rowSub">Category</div>
-            </div>
-            <div class="rowRight successText">{{ row.value | currency:'BDT' }}</div>
-          </div>
-        </div>
-      </ng-container>
-
-      <ng-template #noInc>
-        <div class="emptyX compact">
-          <div class="emptyIcon">??</div>
-          <div>
-            <div class="emptyTitle">No income data</div>
-            <div class="emptySub">Add income to see categories.</div>
-          </div>
-        </div>
-      </ng-template>
-    </div>
-
-    <div class="cardX glassX mobile-only">
+    <div class="cardX glassX live-card mobile-only">
       <div class="cardHead">
         <div>
           <div class="cardTitle">Live dashboard</div>
@@ -485,6 +330,119 @@
         </div>
       </div>
     </div>
+
+    <div class="cardX glassX">
+      <div class="cardHead">
+        <div>
+          <div class="cardTitle">Monthly snapshot</div>
+          <div class="cardSub">Salary & savings</div>
+        </div>
+      </div>
+
+      <app-monthly-summary [month]="currentMonth()"></app-monthly-summary>
+    </div>
+
+    <div class="cardX glassX">
+      <div class="cardHead">
+        <div>
+          <div class="cardTitle">Alerts</div>
+          <div class="cardSub">Unusual spikes</div>
+        </div>
+        <div class="badgeX warn">{{ alertsList().length ? 'Alert' : 'OK' }}</div>
+      </div>
+
+      <ng-container *ngIf="alertsList().length; else noAlerts">
+        <div class="listX">
+          <div *ngFor="let a of alertsList()" class="alertX">
+            <div class="alertIcon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 9v4"></path>
+                <path d="M12 17h.01"></path>
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              </svg>
+            </div>
+            <div class="alertBody">
+              <div class="alertTitle">{{ getCategoryName(a.categoryId) }}</div>
+              <div class="alertSub">Spending higher than usual.</div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #noAlerts>
+        <div class="emptyX compact">
+          <div class="emptyIcon">?</div>
+          <div>
+            <div class="emptyTitle">Everything looks normal</div>
+            <div class="emptySub">No unusual spending detected.</div>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+
+    
+    <div class="cardX glassX">
+      <div class="cardHead">
+        <div>
+          <div class="cardTitle">Expense breakdown</div>
+          <div class="cardSub">Top categories</div>
+        </div>
+      </div>
+
+      <ng-container *ngIf="expenseBreakdown().length; else noExp">
+        <div class="listX">
+          <div *ngFor="let row of expenseBreakdown()" class="rowX">
+            <div class="rowLeft">
+              <div class="rowTitle">{{ row.name }}</div>
+              <div class="rowSub">Category</div>
+            </div>
+            <div class="rowRight dangerText">{{ row.value | currency:'BDT' }}</div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #noExp>
+        <div class="emptyX compact">
+          <div class="emptyIcon">??</div>
+          <div>
+            <div class="emptyTitle">No expense data</div>
+            <div class="emptySub">Add expenses to see categories.</div>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="cardX glassX">
+      <div class="cardHead">
+        <div>
+          <div class="cardTitle">Income breakdown</div>
+          <div class="cardSub">Top categories</div>
+        </div>
+      </div>
+
+      <ng-container *ngIf="incomeBreakdown().length; else noInc">
+        <div class="listX">
+          <div *ngFor="let row of incomeBreakdown()" class="rowX">
+            <div class="rowLeft">
+              <div class="rowTitle">{{ row.name }}</div>
+              <div class="rowSub">Category</div>
+            </div>
+            <div class="rowRight successText">{{ row.value | currency:'BDT' }}</div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #noInc>
+        <div class="emptyX compact">
+          <div class="emptyIcon">??</div>
+          <div>
+            <div class="emptyTitle">No income data</div>
+            <div class="emptySub">Add income to see categories.</div>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+
   </section>
 </div>
 
